@@ -34,6 +34,7 @@ export type Environment = {
   END_BLOCK?: string;
   MODE?: string;
   START_FROM_HEAD?: number;
+  MAX_BLOCK_NUMBER?: string;
   HYPERION_URL?: string;
   ABIS_SERVICE_LIMIT?: string;
   ABIS_SERVICE_FILTER?: string;

@@ -37,9 +37,10 @@ export const buildConfig = (): AlienworldsHistoryToolsConfig => {
       ),
     },
     mongo,
-    batchSize: Number(
-      environment.LEADERBOARD_API_BATCH_SIZE || dotEnv.LEADERBOARD_API_BATCH_SIZE
-    ) || 0,
+    batchSize:
+      Number(
+        environment.LEADERBOARD_API_BATCH_SIZE || dotEnv.LEADERBOARD_API_BATCH_SIZE
+      ) || 0,
     expirationTime:
       environment.LEADERBOARD_TOKEN_EXPIRATION_TIME ||
       dotEnv.LEADERBOARD_TOKEN_EXPIRATION_TIME ||
@@ -137,6 +138,8 @@ export const buildConfig = (): AlienworldsHistoryToolsConfig => {
             dotEnv.BLOCK_RANGE_INVIOLABLE_THREADS_COUNT
         ),
       },
+      maxBlockNumber:
+        Number(environment.MAX_BLOCK_NUMBER || dotEnv.MAX_BLOCK_NUMBER) || 0xffffffff,
     },
     processor: {
       workers: {

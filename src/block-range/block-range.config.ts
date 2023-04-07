@@ -16,7 +16,7 @@ export const buildBlockRangeConfig = (
     scanner,
     featured,
     abis,
-    blockRange: { workers },
+    blockRange: { workers, maxBlockNumber },
   } = config;
 
   const blockRangeConfig: BlockRangeConfig = {
@@ -29,6 +29,7 @@ export const buildBlockRangeConfig = (
     abis: abis.service,
     workers,
     scanKey,
+    maxBlockNumber,
   };
 
   if (scanKey) {
