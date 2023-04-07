@@ -19,7 +19,7 @@ BLOCK_READER_FETCH_TRACES=1
 
 MONGO_HOSTS='localhost'
 MONGO_PORTS='27017'
-MONGO_DB_NAME='alienworlds_history'
+MONGO_DB_NAME='leaderboard_history_tools'
 # MONGO_SRV=0
 # MONGO_SSL=0
 # MONGO_REPLICA_SET=myRepl
