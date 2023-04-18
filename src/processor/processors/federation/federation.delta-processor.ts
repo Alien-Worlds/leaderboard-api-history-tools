@@ -5,19 +5,16 @@ import {
   DataSourceOperationError,
   log,
 } from '@alien-worlds/api-core';
-import { ProcessorSharedData, ProcessorTaskModel } from '@alien-worlds/api-history-tools';
+import { ProcessorTaskModel } from '@alien-worlds/api-history-tools';
 import { User } from '../../users/user';
 import { ExtendedDeltaProcessor } from '../extended-delta.processor';
 
 type ContractData = { [key: string]: unknown };
 
 export default class FederationDeltaProcessor extends ExtendedDeltaProcessor<ContractData> {
-  public async run(
-    model: ProcessorTaskModel,
-    sharedData: ProcessorSharedData
-  ): Promise<void> {
+  public async run(model: ProcessorTaskModel): Promise<void> {
     try {
-      await super.run(model, sharedData);
+      await super.run(model);
       const { input, mongoSource, users } = this;
       const { Ioc, FederationTableName, Entities } = FederationContract.Deltas;
       const {

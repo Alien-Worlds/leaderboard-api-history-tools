@@ -1,18 +1,19 @@
-import { MongoSource } from '@alien-worlds/api-core';
+import { ConfigVars, MongoSource, buildMongoConfig } from '@alien-worlds/api-core';
 import cron from 'cron';
-import { buildConfig } from '../config';
+import { buildCronConfig, buildLeaderboardServiceConfig } from '../config';
 import { updateLeaderboard } from './update-leaderboard';
 
 export const start = async () => {
-  const config = buildConfig();
-  const {
-    cron: { leaderboardUpdateTime },
-  } = config;
+  const vars = new ConfigVars();
+  const mongoConfig = buildMongoConfig(vars);
+  const cronConfig = buildCronConfig(vars);
+  const leaderboardConfig = buildLeaderboardServiceConfig(vars);
+
   //
-  if (leaderboardUpdateTime) {
-    const mongoSource = await MongoSource.create(config.mongo);
-    const leaderboardCronJob = new cron.CronJob(leaderboardUpdateTime, () =>
-      updateLeaderboard(config.leaderboard, mongoSource)
+  if (cronConfig.leaderboardUpdateTime) {
+    const mongoSource = await MongoSource.create(mongoConfig);
+    const leaderboardCronJob = new cron.CronJob(cronConfig.leaderboardUpdateTime, () =>
+      updateLeaderboard(leaderboardConfig, mongoSource)
     );
 
     leaderboardCronJob.start();

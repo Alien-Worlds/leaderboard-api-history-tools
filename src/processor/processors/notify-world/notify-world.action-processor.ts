@@ -6,21 +6,16 @@ import {
   log,
 } from '@alien-worlds/api-core';
 import { ProcessorTaskModel } from '@alien-worlds/api-history-tools';
-import { LeaderboardUpdateBroadcastMessage } from '../../../internal-broadcast/internal-broadcast.message';
-import { ProcessorSharedData } from '../../processor.types';
 import { ExtendedActionTraceProcessor } from '../extended-action-trace.processor';
 
 type ContractData = { [key: string]: unknown };
 
 export default class NotifyWorldActionProcessor extends ExtendedActionTraceProcessor<ContractData> {
-  public async run(
-    model: ProcessorTaskModel,
-    sharedData: ProcessorSharedData
-  ): Promise<void> {
+  public async run(model: ProcessorTaskModel): Promise<void> {
     try {
-      await super.run(model, sharedData);
+      await super.run(model);
       const { Ioc, NotifyWorldActionName, Entities } = NotifyWorldContract.Actions;
-      const { input, mongoSource, broadcast } = this;
+      const { input, mongoSource, broadcast, sharedData } = this;
       const {
         blockNumber,
         blockTimestamp,

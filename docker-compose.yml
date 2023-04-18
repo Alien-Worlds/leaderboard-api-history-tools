@@ -13,17 +13,14 @@ services:
       - common_network
     volumes:
       - ./:/var/history-tools
-  extbroadcast:
+
+  boot:
     build:
       context: .
       args:
         - GITHUB_TOKEN=${GITHUB_TOKEN}
     restart: on-failure
-    ports:
-      - '9001:9001'
-    expose:
-      - 9001
-    command: [ 'sh', '-c', 'yarn broadcast:external' ]
+    command: [ 'sh', '-c', 'yarn boot' ]
     depends_on:
       - broadcast
       - db-history
@@ -32,48 +29,30 @@ services:
     volumes:
       - ./:/var/history-tools
 
-  processor:
+  reader:
     build:
       context: .
       args:
         - GITHUB_TOKEN=${GITHUB_TOKEN}
     restart: on-failure
-    command: [ 'sh', '-c', 'yarn processor' ]
+    command: [ 'sh', '-c', 'yarn reader' ]
     depends_on:
       - broadcast
-      - extbroadcast
       - db-history
     networks:
       - common_network
     volumes:
-      - ./:/var/history-tools
+      - ./:/var/
 
-  block_range:
+  filter:
     build:
       context: .
       args:
         - GITHUB_TOKEN=${GITHUB_TOKEN}
     restart: on-failure
-    command: [ 'sh', '-c', 'yarn block-range' ]
+    command: [ 'sh', '-c', 'yarn filter' ]
     depends_on:
       - broadcast
-      - extbroadcast
-      - db-history
-    networks:
-      - common_network
-    volumes:
-      - ./:/var/history-tools
-
-  filler:
-    build:
-      context: .
-      args:
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
-    restart: on-failure
-    command: [ 'sh', '-c', 'yarn filler' ]
-    depends_on:
-      - broadcast
-      - extbroadcast
       - db-history
     networks:
       - common_network
@@ -90,6 +69,21 @@ services:
       - common_network
     volumes:
       - ./:/var/
+
+  processor:
+    build:
+      context: .
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: on-failure
+    command: [ 'sh', '-c', 'yarn processor' ]
+    depends_on:
+      - broadcast
+      - db-history
+    networks:
+      - common_network
+    volumes:
+      - ./:/var/history-tools
 
   db-history:
     image: mongo

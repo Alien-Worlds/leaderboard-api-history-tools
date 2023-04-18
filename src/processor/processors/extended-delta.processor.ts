@@ -6,17 +6,21 @@ import {
   DeltaProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
+import { ProcessorSharedData } from '../processor.types';
 
-export class ExtendedDeltaProcessor<DataType> extends DeltaProcessor<DataType> {
+export class ExtendedDeltaProcessor<DataType> extends DeltaProcessor<
+  DataType,
+  ProcessorSharedData
+> {
   constructor(
     mongoSource: MongoSource,
     protected broadcast: BroadcastClient,
     protected users: UserRepository
   ) {
-    super(mongoSource);
+    super({ mongoSource });
   }
 
-  public async run(data: ProcessorTaskModel, sharedData: unknown): Promise<void> {
+  public async run(data: ProcessorTaskModel): Promise<void> {
     this.input = DeltaProcessorInput.create<DataType>(data);
   }
 }

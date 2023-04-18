@@ -1,13 +1,18 @@
 import { UserRepository } from './users/user.repository';
 import { Broadcast, BroadcastClient, MongoSource } from '@alien-worlds/api-core';
-import { DefaultWorkerLoader } from '@alien-worlds/api-history-tools';
-import { AlienWorldsBroadcastClient } from '../internal-broadcast/internal-broadcast.enums';
+import { DefaultWorkerLoader, Worker, WorkerContainer } from '@alien-worlds/api-history-tools';
+import { AlienWorldsBroadcastClient } from '../broadcast/internal/internal-broadcast.enums';
 import { ProcessorSharedData } from './processor.types';
+import { ProcessorLabel } from './processor.labels';
+import FederationDeltaProcessor from './processors/federation/federation.delta-processor';
+import NotifyWorldActionProcessor from './processors/notify-world/notify-world.action-processor';
+import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
 
 export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   private mongoSource: MongoSource;
   private broadcast: BroadcastClient;
   private users: UserRepository;
+  private container = new WorkerContainer();
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
     const {
@@ -21,16 +26,28 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
     this.users = new UserRepository(this.mongoSource);
 
     this.broadcast.connect();
+
+    // 'uspts.worlds'
+    this.container.bind(
+      ProcessorLabel.UsptsWorldsActionProcessor,
+      UsptsWorldsActionProcessor
+    );
+    // 'federation'
+    this.container.bind(
+      ProcessorLabel.FederationDeltaProcessor,
+      FederationDeltaProcessor
+    );
+    // 'notify.world'
+    this.container.bind(
+      ProcessorLabel.NotifyWorldActionProcessor,
+      NotifyWorldActionProcessor
+    );
   }
 
-  public async load(pointer: string, containerPath: string) {
+  public async load(pointer: string) {
     const { mongoSource, broadcast, users } = this;
-    return super.load(
-      pointer,
-      containerPath,
-      mongoSource,
-      broadcast,
-      users
-    );
+    const Class = this.container.get(pointer);
+    const worker: Worker = new Class({ mongoSource, broadcast, users }) as Worker;
+    return worker;
   }
 }

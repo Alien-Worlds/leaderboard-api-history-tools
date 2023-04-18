@@ -6,9 +6,6 @@ import {
 } from '@alien-worlds/alienworlds-api-common';
 import { BroadcastConfig, MongoConfig } from '@alien-worlds/api-core';
 import { ExtendedLeaderboardServiceConfig } from '../config';
-export type ProcessorOptions = {
-  threads: number;
-};
 
 export type ProcessorSharedData = {
   config: {

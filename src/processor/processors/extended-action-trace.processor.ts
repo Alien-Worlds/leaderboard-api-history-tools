@@ -23,15 +23,16 @@ import {
 } from '../leaderboard/leaderboard.utils';
 import { ProcessorSharedData } from '../processor.types';
 
-export class ExtendedActionTraceProcessor<
-  DataType
-> extends ActionTraceProcessor<DataType> {
+export class ExtendedActionTraceProcessor<DataType> extends ActionTraceProcessor<
+  DataType,
+  ProcessorSharedData
+> {
   constructor(
     mongoSource: MongoSource,
     protected broadcast: BroadcastClient,
     protected users: UserRepository
   ) {
-    super(mongoSource);
+    super({ mongoSource });
   }
 
   protected async sendLeaderboard(
@@ -64,10 +65,7 @@ export class ExtendedActionTraceProcessor<
     }
   }
 
-  public async run(
-    data: ProcessorTaskModel,
-    sharedData: ProcessorSharedData
-  ): Promise<void> {
+  public async run(data: ProcessorTaskModel): Promise<void> {
     this.input = ActionTraceProcessorInput.create<DataType>(data);
   }
 }
