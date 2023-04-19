@@ -12,12 +12,20 @@ export class ExtendedDeltaProcessor<DataType> extends DeltaProcessor<
   DataType,
   ProcessorSharedData
 > {
-  constructor(
-    mongoSource: MongoSource,
-    protected broadcast: BroadcastClient,
-    protected users: UserRepository
-  ) {
+  protected broadcast: BroadcastClient;
+  protected users: UserRepository;
+
+  constructor(components: {
+    mongoSource: MongoSource;
+    broadcast: BroadcastClient;
+    users: UserRepository;
+    sharedData: ProcessorSharedData;
+  }) {
+    const { mongoSource, broadcast, users, sharedData } = components;
     super({ mongoSource });
+    this.sharedData = sharedData;
+    this.broadcast = broadcast;
+    this.users = users;
   }
 
   public async run(data: ProcessorTaskModel): Promise<void> {

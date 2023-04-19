@@ -1,6 +1,10 @@
 import { UserRepository } from './users/user.repository';
 import { Broadcast, BroadcastClient, MongoSource } from '@alien-worlds/api-core';
-import { DefaultWorkerLoader, Worker, WorkerContainer } from '@alien-worlds/api-history-tools';
+import {
+  DefaultWorkerLoader,
+  Worker,
+  WorkerContainer,
+} from '@alien-worlds/api-history-tools';
 import { AlienWorldsBroadcastClient } from '../broadcast/internal/internal-broadcast.enums';
 import { ProcessorSharedData } from './processor.types';
 import { ProcessorLabel } from './processor.labels';
@@ -15,6 +19,7 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   private container = new WorkerContainer();
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
+    super.setup(sharedData);
     const {
       config: { mongo, broadcast },
     } = sharedData;
@@ -45,9 +50,14 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   }
 
   public async load(pointer: string) {
-    const { mongoSource, broadcast, users } = this;
+    const { mongoSource, broadcast, users, sharedData } = this;
     const Class = this.container.get(pointer);
-    const worker: Worker = new Class({ mongoSource, broadcast, users }) as Worker;
+    const worker: Worker = new Class({
+      mongoSource,
+      broadcast,
+      users,
+      sharedData,
+    }) as Worker;
     return worker;
   }
 }
