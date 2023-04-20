@@ -40,9 +40,9 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
-    "@alien-worlds/alienworlds-api-common": "^0.0.61",
-    "@alien-worlds/api-core": "^0.0.95",
-    "@alien-worlds/api-history-tools": "^0.0.104",
+    "@alien-worlds/alienworlds-api-common": "^0.0.63",
+    "@alien-worlds/api-core": "^0.0.97",
+    "@alien-worlds/api-history-tools": "^0.0.107",
     "@types/cron": "^2.0.1",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/ms": "^0.7.31",
