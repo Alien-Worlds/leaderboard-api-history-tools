@@ -1,13 +1,6 @@
-import {
-  ConfigVars,
-  buildMongoConfig,
-} from '@alien-worlds/api-core';
-import {
-  ExtendedLeaderboardServiceConfig,
-  CronConfig,
-} from './config.types';
+import { BroadcastConfig, ConfigVars, buildMongoConfig } from '@alien-worlds/api-core';
+import { ExtendedLeaderboardServiceConfig, CronConfig } from './config.types';
 import { AtomicAssetsConfig } from '@alien-worlds/alienworlds-api-common';
-
 
 export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
   leaderboardUpdateTime: vars.getStringEnv('LEADERBOARD_UPDATE_CRON_TIME'),

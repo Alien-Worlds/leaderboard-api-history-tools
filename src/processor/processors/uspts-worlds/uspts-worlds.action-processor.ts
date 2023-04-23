@@ -1,83 +1,53 @@
 import { UsptsWorldsContract } from '@alien-worlds/alienworlds-api-common';
+import { log } from '@alien-worlds/api-core';
 import {
-  ContractAction,
-  ContractUnkownDataEntity,
-  DataSourceOperationError,
-  log,
-} from '@alien-worlds/api-core';
-import { ProcessorTaskModel } from '@alien-worlds/api-history-tools';
-import { ExtendedActionTraceProcessor } from '../extended-action-trace.processor';
+  ActionTraceProcessorInput,
+  ProcessorTaskModel,
+} from '@alien-worlds/api-history-tools';
+import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
+import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
+import { UpdateLeaderboardUseCase } from '../../leaderboard/domain/use-cases/update-leaderboard.use-case';
+import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
 
 type ContractData = { [key: string]: unknown };
 
-export default class UsptsWorldsActionProcessor extends ExtendedActionTraceProcessor<ContractData> {
-  public async run(
-    model: ProcessorTaskModel,
-  ): Promise<void> {
+export default class UsptsWorldsActionProcessor extends LeaderboardActionTraceProcessor<ContractData> {
+  public async run(model: ProcessorTaskModel): Promise<void> {
     try {
-      await super.run(model);
-      const { Ioc, UsptsWorldsActionName, Entities } = UsptsWorldsContract.Actions;
-      const { input, mongoSource, sharedData } = this;
-      const {
-        blockNumber,
-        blockTimestamp,
-        account,
-        name,
-        recvSequence,
-        globalSequence,
-        transactionId,
-        data,
-      } = input;
-      const contractModel = {
-        blockNumber,
-        blockTimestamp,
-        account,
-        name,
-        receiverSequence: recvSequence,
-        globalSequence,
-        transactionId,
-        data: null,
-      };
+      this.input = ActionTraceProcessorInput.create(model);
+      const { UsptsWorldsActionName } = UsptsWorldsContract.Actions;
+      const { input, ioc } = this;
+      const { blockNumber, blockTimestamp, name, data } = input;
 
-      const repository = await Ioc.setupUsptsWorldsActionRepository(mongoSource);
+      const updateLeaderboardUseCase = ioc.get<UpdateLeaderboardUseCase>(
+        UpdateLeaderboardUseCase.Token
+      );
+      const leaderboardUpdates = ioc.get<LeaderboardUpdateRepository>(
+        LeaderboardUpdateRepository.Token
+      );
+
       if (name === UsptsWorldsActionName.AddPoints) {
-        const addpointsStruct = <UsptsWorldsContract.Actions.Types.AddpointsStruct>data;
-        contractModel.data = Entities.AddPoints.fromStruct(addpointsStruct);
-        //
-        // broadcast.sendMessage(
-        //   LeaderboardUpdateBroadcastMessage.create(
-        //     contractModel.blockNumber,
-        //     contractModel.blockTimestamp,
-        //     null,
-        //     null,
-        //     addpointsStruct
-        //   )
-        // );
-        sharedData.leaderboard.push(addpointsStruct);
-        this.sendLeaderboard(blockNumber, blockTimestamp, sharedData);
-      } else {
-        /*
-        In the case of an action (test or former etc.) that is not included in the current ABI and 
-        for which we do not have defined types, we must save the object in its primary form.
-        */
-        contractModel.data = ContractUnkownDataEntity.create(data);
-      }
+        const update = LeaderboardUpdate.fromAddPointsJson(
+          blockNumber,
+          blockTimestamp,
+          <UsptsWorldsContract.Actions.Types.AddpointsStruct>data
+        );
+        const { failure: updateFailure } = await updateLeaderboardUseCase.execute([
+          update,
+        ]);
 
-      const result = await repository.add(ContractAction.create(contractModel));
-
-      if (result.isFailure) {
-        const {
-          failure: { error },
-        } = result;
-        if ((<DataSourceOperationError>error).isDuplicateError) {
-          log(`Resolving a task containing duplicate documents: ${error.message}`);
-          this.resolve(contractModel);
+        if (updateFailure) {
+          log(updateFailure.error);
+          const backupResult = await leaderboardUpdates.add([update]);
+          if (backupResult.isFailure) {
+            log(backupResult.failure.error);
+          }
+          this.reject(updateFailure.error);
         } else {
-          log(error);
-          this.reject(error);
+          this.resolve();
         }
       } else {
-        this.resolve(result.content);
+        this.resolve();
       }
     } catch (error) {
       log(error);

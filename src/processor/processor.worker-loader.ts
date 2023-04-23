@@ -1,37 +1,31 @@
-import { UserRepository } from './users/user.repository';
-import { Broadcast, BroadcastClient, MongoSource } from '@alien-worlds/api-core';
+import {
+  Container,
+  MongoSource,
+} from '@alien-worlds/api-core';
 import {
   DefaultWorkerLoader,
   Worker,
   WorkerContainer,
 } from '@alien-worlds/api-history-tools';
-import { AlienWorldsBroadcastClient } from '../broadcast/internal/internal-broadcast.enums';
 import { ProcessorSharedData } from './processor.types';
 import { ProcessorLabel } from './processor.labels';
-import FederationDeltaProcessor from './processors/federation/federation.delta-processor';
 import NotifyWorldActionProcessor from './processors/notify-world/notify-world.action-processor';
 import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
+import FederationActionProcessor from './processors/federation/federation-world.action-processor';
 
 export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   private mongoSource: MongoSource;
-  private broadcast: BroadcastClient;
-  private users: UserRepository;
   private container = new WorkerContainer();
+  private ioc: Container;
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
     super.setup(sharedData);
     const {
-      config: { mongo, broadcast },
+      config: { mongo },
     } = sharedData;
     this.mongoSource = await MongoSource.create(mongo);
-    this.broadcast = await Broadcast.createClient({
-      ...broadcast,
-      clientName: AlienWorldsBroadcastClient.Processor,
-    });
-    this.users = new UserRepository(this.mongoSource);
-
-    this.broadcast.connect();
-
+    this.ioc = new Container();
+    // await setupLeaderboard(config, ioc);
     // 'uspts.worlds'
     this.container.bind(
       ProcessorLabel.UsptsWorldsActionProcessor,
@@ -39,8 +33,8 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
     );
     // 'federation'
     this.container.bind(
-      ProcessorLabel.FederationDeltaProcessor,
-      FederationDeltaProcessor
+      ProcessorLabel.FederationActionProcessor,
+      FederationActionProcessor
     );
     // 'notify.world'
     this.container.bind(
@@ -50,13 +44,11 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   }
 
   public async load(pointer: string) {
-    const { mongoSource, broadcast, users, sharedData } = this;
+    const { mongoSource, ioc } = this;
     const Class = this.container.get(pointer);
     const worker: Worker = new Class({
       mongoSource,
-      broadcast,
-      users,
-      sharedData,
+      ioc,
     }) as Worker;
     return worker;
   }

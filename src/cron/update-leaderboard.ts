@@ -1,6 +1,6 @@
 import { ExtendedLeaderboardServiceConfig } from './../config';
 import { MongoSource, log } from '@alien-worlds/api-core';
-import { LeaderboardUpdateBackupRepository } from '../processor/leaderboard/leaderboard-update-backup.repository';
+import { LeaderboardUpdateBackupRepository } from '../processor/leaderboard/domain/repositories/leaderboard-update.repository';
 import { postLeaderboard } from '../processor/leaderboard/leaderboard.utils';
 
 export const updateLeaderboard = async (

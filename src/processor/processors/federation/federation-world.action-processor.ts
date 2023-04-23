@@ -1,38 +1,46 @@
-import { NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
-import { log } from '@alien-worlds/api-core';
+import {
+  FederationContract,
+  NotifyWorldContract,
+} from '@alien-worlds/alienworlds-api-common';
+import {
+  ContractAction,
+  ContractUnkownDataEntity,
+  DataSourceOperationError,
+  log,
+} from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
 import { UpdateLeaderboardUseCase } from '../../leaderboard/domain/use-cases/update-leaderboard.use-case';
-import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
 import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
+import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
 
 type ContractData = { [key: string]: unknown };
 
-export default class NotifyWorldActionProcessor extends LeaderboardActionTraceProcessor<ContractData> {
+export default class FederationActionProcessor extends LeaderboardActionTraceProcessor<ContractData> {
   public async run(model: ProcessorTaskModel): Promise<void> {
     try {
       this.input = ActionTraceProcessorInput.create(model);
-      const { NotifyWorldActionName } = NotifyWorldContract.Actions;
+      const { FederationActionName } = FederationContract.Actions;
       const { input, ioc } = this;
       const { blockNumber, blockTimestamp, name, data } = input;
 
-      const updateLeaderboardUseCase = ioc.get<UpdateLeaderboardUseCase>(
+      const updateLeaderboardUseCse = ioc.get<UpdateLeaderboardUseCase>(
         UpdateLeaderboardUseCase.Token
       );
       const leaderboardUpdates = ioc.get<LeaderboardUpdateRepository>(
         LeaderboardUpdateRepository.Token
       );
 
-      if (name === NotifyWorldActionName.Logmine) {
-        const update = LeaderboardUpdate.fromLogmineJson(
+      if (name === FederationActionName.Settag) {
+        const update = LeaderboardUpdate.fromSetTagJson(
           blockNumber,
           blockTimestamp,
-          <NotifyWorldContract.Actions.Types.LogmineStruct>data
+          <FederationContract.Actions.Types.SettagDocument>data
         );
-        const { failure: updateFailure } = await updateLeaderboardUseCase.execute([
+        const { failure: updateFailure } = await updateLeaderboardUseCse.execute([
           update,
         ]);
 

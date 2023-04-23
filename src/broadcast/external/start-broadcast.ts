@@ -11,28 +11,29 @@ export const startExternalBroadcast = async (
   internalBroadcastConfig: BroadcastConfig
 ) => {
   log(`External broadcast ... [starting]`);
-  // // start tcp socket server so that interested listeners like the leaderboard api
-  // // could receive messages with data from the blockchain
-  // const server = await Broadcast.startServer(externalBroadcastConfig);
+  // start tcp socket server so that interested listeners like the leaderboard api
+  // could receive messages with data from the blockchain
+  const server = await Broadcast.startServer(externalBroadcastConfig);
 
-  // // listen to internal messages to channel "external-broadcast"
-  // const broadcast = await Broadcast.createClient({
-  //   ...internalBroadcastConfig,
-  //   clientName: InternalBroadcastClientName.ExternalBroadcast,
-  // });
+  // listen to internal messages to channel "external-broadcast"
+  const broadcast = await Broadcast.createClient({
+    ...internalBroadcastConfig,
+    clientName: InternalBroadcastClientName.ExternalBroadcast,
+  });
 
-  // broadcast.onMessage(InternalBroadcastChannel.ExternalBroadcast, async message => {
-  //   // send message with blockchain data (logmine, settag or addpoints)
-  //   // to all instances of leaderboard API
-  //   // server.sendMessageToChannel(
-  //   //   ExternalBroadcastChannel.LeaderboardUpdate,
-  //   //   (<LeaderboardUpdateMessage>message.content).data
-  //   // );
-  // });
+  broadcast.onMessage(InternalBroadcastChannel.ExternalBroadcast, async message => {
+    // send message with blockchain data (logmine, settag or addpoints)
+    // to all instances of leaderboard API
+    // server.sendMessageToChannel(
+    //   ExternalBroadcastChannel.LeaderboardUpdate,
+    //   (<LeaderboardUpdateMessage>message.content).data
+    // );
+    console.log('RECEIVED MESSAGE!')
+  });
 
-  // // run internal listener (client)
-  // broadcast.connect();
+  // run internal listener (client)
+  broadcast.connect();
 
-  // log(`External broadcast ... [ready]`);
-  log(`External broadcast ... [skipped]`);
+  log(`External broadcast ... [ready]`);
+  // log(`External broadcast ... [skipped]`);
 };

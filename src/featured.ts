@@ -16,15 +16,13 @@ export default {
       action: ['logmine'],
       processor: ProcessorLabel.NotifyWorldActionProcessor,
     },
-  ],
-  deltas: [
     {
-      shipDeltaMessageName: ['table_delta_v0'],
-      name: ['contract_row'],
-      code: ['federation'],
-      scope: ['*'],
-      table: ['players'],
-      processor: ProcessorLabel.FederationDeltaProcessor,
+      shipTraceMessageName: ['transaction_trace_v0'],
+      shipActionTraceMessageName: ['action_trace_v0', 'action_trace_v1'],
+      contract: ['federation'],
+      action: ['settag'],
+      processor: ProcessorLabel.FederationActionProcessor,
     },
   ],
+  deltas: [],
 };

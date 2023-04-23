@@ -13,6 +13,19 @@ services:
       - common_network
     volumes:
       - ./:/var/history-tools
+  extbroadcast:
+    build:
+      context: .
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: on-failure
+    ports:
+      - '9001:9001'
+    command: [ 'sh', '-c', 'yarn broadcast:external' ]
+    networks:
+      - common_network
+    volumes:
+      - ./:/var/history-tools
 
   boot:
     build:
@@ -42,7 +55,7 @@ services:
     networks:
       - common_network
     volumes:
-      - ./:/var/
+      - ./:/var/history-tools
 
   filter:
     build:
@@ -57,18 +70,7 @@ services:
     networks:
       - common_network
     volumes:
-      - ./:/var/
-  cron:
-    build:
-      context: .
-      args:
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
-    restart: on-failure
-    command: [ 'sh', '-c', 'yarn cron' ]
-    networks:
-      - common_network
-    volumes:
-      - ./:/var/
+      - ./:/var/history-tools
 
   processor:
     build:
