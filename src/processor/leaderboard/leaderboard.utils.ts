@@ -10,7 +10,7 @@ import {
 } from '@alien-worlds/alienworlds-api-common';
 import { log } from '@alien-worlds/api-core';
 import { ProcessorSharedData } from '../processor.types';
-import { ExtendedLeaderboardServiceConfig } from '../../config';
+import { ExtendedLeaderboardConfig } from '../../config';
 import { User } from '../users/user';
 
 type LeaderboardUpdateStruct = {
@@ -29,7 +29,7 @@ type LeaderboardUpdateStruct = {
 type PostFailureCallback = (structs: LeaderboardUpdateStruct[]) => void;
 
 export const generateLeaderboardUpdateToken = (
-  config: ExtendedLeaderboardServiceConfig
+  config: ExtendedLeaderboardConfig
 ) => {
   if (!config.secretKey) {
     return null;
@@ -51,7 +51,7 @@ export const generateLeaderboardUpdateToken = (
 };
 
 export const postLeaderboard = async (
-  config: ExtendedLeaderboardServiceConfig,
+  config: ExtendedLeaderboardConfig,
   body: LeaderboardUpdateStruct[],
   onFailure: PostFailureCallback
 ): Promise<boolean> => {

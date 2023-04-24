@@ -1,7 +1,4 @@
-import {
-  Container,
-  MongoSource,
-} from '@alien-worlds/api-core';
+import { Container, MongoSource } from '@alien-worlds/api-core';
 import {
   DefaultWorkerLoader,
   Worker,
@@ -12,20 +9,19 @@ import { ProcessorLabel } from './processor.labels';
 import NotifyWorldActionProcessor from './processors/notify-world/notify-world.action-processor';
 import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
 import FederationActionProcessor from './processors/federation/federation-world.action-processor';
+import { setupLeaderboard } from './leaderboard/ioc.config';
 
 export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
-  private mongoSource: MongoSource;
   private container = new WorkerContainer();
   private ioc: Container;
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
     super.setup(sharedData);
     const {
-      config: { mongo },
+      config: { leaderboard },
     } = sharedData;
-    this.mongoSource = await MongoSource.create(mongo);
     this.ioc = new Container();
-    // await setupLeaderboard(config, ioc);
+    await setupLeaderboard(leaderboard, null, this.ioc);
     // 'uspts.worlds'
     this.container.bind(
       ProcessorLabel.UsptsWorldsActionProcessor,
@@ -44,10 +40,9 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   }
 
   public async load(pointer: string) {
-    const { mongoSource, ioc } = this;
+    const { ioc } = this;
     const Class = this.container.get(pointer);
     const worker: Worker = new Class({
-      mongoSource,
       ioc,
     }) as Worker;
     return worker;

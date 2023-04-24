@@ -32,8 +32,10 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
         const { failure } = await leaderboardUpdates.add([update]);
         if (failure) {
           log(failure.error);
+          this.reject(failure.error);
+        } else {
+          this.resolve();
         }
-        this.reject(failure.error);
       } else {
         this.resolve();
       }

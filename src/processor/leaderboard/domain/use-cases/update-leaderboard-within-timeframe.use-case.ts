@@ -120,7 +120,7 @@ export class UpdateLeaderboardWithinTimeframeUseCase
 
     if (newUpdates.length > 0) {
       const updateResult = await repository.update(newUpdates);
-      
+
       if (updateResult.isFailure) {
         failedUpdates.push(...updates);
       }
@@ -131,6 +131,8 @@ export class UpdateLeaderboardWithinTimeframeUseCase
         Failure.fromError(new LeaderboardUpdateError(updates.length, failedUpdates))
       );
     }
+
+    return Result.withContent(UpdateStatus.Success);
   }
 
   /*methods*/

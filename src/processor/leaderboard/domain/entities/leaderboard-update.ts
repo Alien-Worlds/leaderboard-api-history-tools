@@ -51,12 +51,13 @@ export class LeaderboardUpdate {
     json: NotifyWorldContract.Actions.Types.LogmineStruct
   ): LeaderboardUpdate {
     const { miner, bounty, land_id, planet_name, bag_items } = json;
+
     return new LeaderboardUpdate(
       parseToBigInt(blockNumber),
       blockTimestamp,
       miner,
       '',
-      Number(bounty),
+      bounty ? bounty.match(/[+-]?\d+(\.\d+)?/g).map(parseFloat)[0] : 0,
       0,
       parseToBigInt(land_id),
       planet_name,
@@ -71,6 +72,7 @@ export class LeaderboardUpdate {
     json: UsptsWorldsContract.Actions.Types.AddpointsStruct
   ): LeaderboardUpdate {
     const { user, points } = json;
+
     return new LeaderboardUpdate(
       parseToBigInt(blockNumber),
       blockTimestamp,

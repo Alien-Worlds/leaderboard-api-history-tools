@@ -5,12 +5,12 @@ import {
   FederationContract,
 } from '@alien-worlds/alienworlds-api-common';
 import { BroadcastConfig, MongoConfig } from '@alien-worlds/api-core';
-import { ExtendedLeaderboardServiceConfig } from '../config';
+import { ExtendedLeaderboardConfig } from '../config';
 
 export type ProcessorSharedData = {
   config: {
     mongo: MongoConfig;
-    leaderboard: ExtendedLeaderboardServiceConfig;
+    leaderboard: ExtendedLeaderboardConfig;
     atomicassets: AtomicAssetsConfig;
     broadcast: BroadcastConfig;
   };

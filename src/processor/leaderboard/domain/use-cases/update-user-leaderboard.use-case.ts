@@ -19,7 +19,7 @@ export class UpdateUserLeaderboardUseCase implements UseCase<Leaderboard> {
   public async execute(
     current: Leaderboard,
     update: LeaderboardUpdate,
-    assets: AtomicAsset<MinigToolData>[]
+    assets: AtomicAsset<MinigToolData>[] = []
   ): Promise<Result<Leaderboard>> {
     const points = update.points || 0;
     const bounty = update.bounty || 0;

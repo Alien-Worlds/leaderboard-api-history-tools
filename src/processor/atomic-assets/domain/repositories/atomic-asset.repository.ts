@@ -8,9 +8,5 @@ export abstract class AtomicAssetRepository {
   public abstract getAssets(
     assetIds: Array<string | number | bigint>
   ): Promise<Result<AtomicAsset[]>>;
-
-  public abstract hasAssets(
-    assetIds: Array<string | number | bigint>
-  ): Promise<Result<boolean>>;
   /*methods*/
 }

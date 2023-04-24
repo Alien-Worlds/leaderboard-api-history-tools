@@ -17,7 +17,7 @@ export class CreateUserLeaderboardUseCase implements UseCase<Leaderboard> {
    */
   public async execute(
     update: LeaderboardUpdate,
-    assets: AtomicAsset<MinigToolData>[]
+    assets: AtomicAsset<MinigToolData>[] = []
   ): Promise<Result<Leaderboard>> {
     const {
       walletId,
