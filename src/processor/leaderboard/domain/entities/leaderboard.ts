@@ -1,17 +1,13 @@
-import {
-  LeaderboardDocument,
-  LeaderboardStruct,
-  MinigToolData,
-} from '../../data/leaderboard.dtos';
+import { LeaderboardDocument, LeaderboardJson } from '../../data/leaderboard.dtos';
 import {
   MongoDB,
   parseToBigInt,
   removeUndefinedProperties,
 } from '@alien-worlds/api-core';
 
-import { AtomicAsset } from '@alien-worlds/alienworlds-api-common';
 import { LeaderboardNumbers } from './../../data/leaderboard.dtos';
-import { LeaderboardUpdate } from '../models/update-leaderboard.input';
+import { nanoid } from 'nanoid';
+import { LeaderboardSort } from '../leaderboard.enums';
 
 /**
  * @class
@@ -27,9 +23,9 @@ export class Leaderboard {
     const {
       _id,
       last_update_timestamp,
-      last_update_hash,
-      start_timestamp,
-      end_timestamp,
+      last_update_id,
+      last_block_number,
+      last_block_timestamp,
       username,
       wallet_id,
       tlm_gains_total,
@@ -39,16 +35,12 @@ export class Leaderboard {
       total_charge_time,
       avg_charge_time,
       total_mining_power,
-      unique_tools_used,
       avg_mining_power,
       total_nft_power,
       avg_nft_power,
       lands,
-      lands_mined_on,
       planets,
-      planets_mined_on,
       rankings,
-      ...rest
     } = document;
 
     const rankingsMap = new Map<string, number>();
@@ -61,15 +53,14 @@ export class Leaderboard {
     }
 
     return new Leaderboard(
-      new Date(start_timestamp),
-      new Date(end_timestamp),
+      parseToBigInt(last_block_number),
+      last_block_timestamp,
       wallet_id,
       username,
       tlm_gains_total,
       tlm_gains_highest,
       total_nft_points,
       tools_used ? tools_used.map(id => parseToBigInt(id)) : [],
-      unique_tools_used,
       total_charge_time,
       avg_charge_time,
       total_mining_power,
@@ -77,43 +68,36 @@ export class Leaderboard {
       total_nft_power,
       avg_nft_power,
       lands ? lands.map(id => parseToBigInt(id)) : [],
-      lands_mined_on,
       planets,
-      planets_mined_on,
       last_update_timestamp ? new Date(last_update_timestamp) : new Date(),
-      last_update_hash,
+      last_update_id,
       rankingsMap,
-      _id instanceof MongoDB.ObjectId ? _id.toString() : '',
-      rest
+      _id instanceof MongoDB.ObjectId ? _id.toString() : ''
     );
   }
 
-  public static fromStruct(struct: LeaderboardStruct): Leaderboard {
+  public static fromJson(json: LeaderboardJson): Leaderboard {
     const {
-      start_timestamp,
-      end_timestamp,
-      wallet_id,
+      last_update_timestamp,
+      last_update_id,
+      last_block_number,
+      last_block_timestamp,
       username,
+      wallet_id,
       tlm_gains_total,
       tlm_gains_highest,
       total_nft_points,
+      tools_used,
       total_charge_time,
       avg_charge_time,
       total_mining_power,
       avg_mining_power,
       total_nft_power,
       avg_nft_power,
-      lands_mined_on,
-      planets_mined_on,
-      planets,
       lands,
-      tools_used,
-      unique_tools_used,
-      last_update_timestamp,
-      last_update_hash,
+      planets,
       rankings,
-      ...rest
-    } = struct;
+    } = json;
 
     const rankingsMap = new Map<string, number>();
 
@@ -125,119 +109,26 @@ export class Leaderboard {
     }
 
     return new Leaderboard(
-      new Date(start_timestamp),
-      new Date(end_timestamp),
+      parseToBigInt(last_block_number),
+      new Date(last_block_timestamp),
       wallet_id,
       username,
       tlm_gains_total,
       tlm_gains_highest,
       total_nft_points,
-      tools_used ? tools_used.map(tool => parseToBigInt(tool)) : [],
-      unique_tools_used,
+      tools_used ? tools_used.map(id => parseToBigInt(id)) : [],
       total_charge_time,
       avg_charge_time,
       total_mining_power,
       avg_mining_power,
       total_nft_power,
       avg_nft_power,
-      lands ? lands.map(land => parseToBigInt(land)) : [],
-      lands_mined_on,
+      lands ? lands.map(id => parseToBigInt(id)) : [],
       planets,
-      planets_mined_on,
       last_update_timestamp ? new Date(last_update_timestamp) : new Date(),
-      last_update_hash,
+      last_update_id,
       rankingsMap,
-      '',
-      rest
-    );
-  }
-
-  public static cloneAndUpdate(
-    leaderboard: Leaderboard,
-    updates: LeaderboardUpdate,
-    assets: AtomicAsset<MinigToolData>[]
-  ): Leaderboard {
-    const {
-      startTimestamp,
-      endTimestamp,
-      walletId,
-      tlmGainsTotal,
-      tlmGainsHighest,
-      totalNftPoints,
-      toolsUsed,
-      id,
-      rest,
-    } = leaderboard;
-    const { landId, planetName } = updates;
-    const points = updates.points || 0;
-    const bounty = updates.bounty || 0;
-    let totalChargeTime = leaderboard.totalChargeTime;
-    let totalMiningPower = leaderboard.totalMiningPower;
-    let totalNftPower = leaderboard.totalNftPower;
-
-    assets.forEach(asset => {
-      const {
-        assetId,
-        data: { ease, delay, difficulty },
-      } = asset;
-
-      if (toolsUsed.indexOf(assetId) === -1) {
-        toolsUsed.push(assetId);
-        totalChargeTime += delay;
-        totalMiningPower += ease;
-        totalNftPower += difficulty;
-      }
-    });
-
-    const toolsCount = toolsUsed.length;
-    const avgChargeTime = toolsCount
-      ? totalChargeTime / toolsCount
-      : leaderboard.avgChargeTime;
-    const avgMiningPower = toolsCount
-      ? totalMiningPower / toolsCount
-      : leaderboard.avgMiningPower;
-    const avgNftPower = toolsCount ? totalNftPower / toolsCount : leaderboard.avgNftPower;
-    const username = leaderboard.username || updates.username;
-    const lands = leaderboard.lands;
-    let landsMinedOn = leaderboard.landsMinedOn;
-    const planets = leaderboard.planets;
-    let planetsMinedOn = leaderboard.planetsMinedOn;
-
-    if (landId && lands.indexOf(landId) === -1) {
-      lands.push(landId);
-      landsMinedOn += 1;
-    }
-
-    if (planetName && planets?.indexOf(planetName) === -1) {
-      planets.push(planetName);
-      planetsMinedOn += 1;
-    }
-
-    return new Leaderboard(
-      startTimestamp,
-      endTimestamp,
-      walletId,
-      username,
-      tlmGainsTotal + bounty,
-      tlmGainsHighest < bounty ? bounty : tlmGainsHighest,
-      totalNftPoints + points,
-      toolsUsed,
-      toolsCount,
-      totalChargeTime,
-      avgChargeTime,
-      totalMiningPower,
-      avgMiningPower,
-      totalNftPower,
-      avgNftPower,
-      lands,
-      landsMinedOn,
-      planets,
-      planetsMinedOn,
-      new Date(),
-      updates.id,
-      leaderboard.rankings,
-      id,
-      rest
+      ''
     );
   }
 
@@ -247,14 +138,52 @@ export class Leaderboard {
     walletId: string,
     username: string,
     bounty: number,
+    bountyHighest: number,
     points: number,
+    totalChargeTime: number,
+    avgChargeTime: number,
+    totalMiningPower: number,
+    avgMiningPower: number,
+    totalNftPower: number,
+    avgNftPower: number,
     lands: bigint[],
     planets: string[],
-    assets: AtomicAsset<MinigToolData>[],
+    assets: bigint[],
     rankings?: LeaderboardNumbers,
     lastUpdateId?: string
   ): Leaderboard {
+    const rankingsMap = new Map<string, number>();
+    const ranks = rankings || {};
 
+    rankingsMap.set(
+      LeaderboardSort.AvgChargeTime,
+      ranks[LeaderboardSort.AvgChargeTime] || 0
+    );
+    rankingsMap.set(
+      LeaderboardSort.AvgMiningPower,
+      ranks[LeaderboardSort.AvgMiningPower] || 0
+    );
+    rankingsMap.set(LeaderboardSort.AvgNftPower, ranks[LeaderboardSort.AvgNftPower] || 0);
+    rankingsMap.set(
+      LeaderboardSort.LandsMinedOn,
+      ranks[LeaderboardSort.LandsMinedOn] || 0
+    );
+    rankingsMap.set(
+      LeaderboardSort.PlanetsMinedOn,
+      ranks[LeaderboardSort.PlanetsMinedOn] || 0
+    );
+    rankingsMap.set(
+      LeaderboardSort.TlmGainsTotal,
+      ranks[LeaderboardSort.TlmGainsTotal] || 0
+    );
+    rankingsMap.set(
+      LeaderboardSort.TotalNftPoints,
+      ranks[LeaderboardSort.TotalNftPoints] || 0
+    );
+    rankingsMap.set(
+      LeaderboardSort.UniqueToolsUsed,
+      ranks[LeaderboardSort.UniqueToolsUsed] || 0
+    );
 
     return new Leaderboard(
       blockNumber,
@@ -262,10 +191,9 @@ export class Leaderboard {
       walletId,
       username,
       Number(bounty) || 0,
-      Number(bounty) || 0,
+      Number(bountyHighest || bounty) || 0,
       Number(points) || 0,
-      toolsUsed,
-      toolsCount,
+      assets,
       totalChargeTime,
       avgChargeTime,
       totalMiningPower,
@@ -273,14 +201,11 @@ export class Leaderboard {
       totalNftPower,
       avgNftPower,
       lands,
-      lands.length,
       planets,
-      planets.length,
       new Date(),
-      lastUpdateId,
+      lastUpdateId || nanoid(),
       rankingsMap,
-      '',
-      {}
+      ''
     );
   }
 
@@ -288,15 +213,14 @@ export class Leaderboard {
    * @constructor
    */
   protected constructor(
-    public readonly startTimestamp: Date,
-    public readonly endTimestamp: Date,
+    public readonly lastBlockNumber: bigint,
+    public readonly lastBlockTimestamp: Date,
     public readonly walletId: string,
     public readonly username: string,
     public readonly tlmGainsTotal: number,
     public readonly tlmGainsHighest: number,
     public readonly totalNftPoints: number,
     public readonly toolsUsed: bigint[],
-    public readonly uniqueToolsUsed: number,
     public readonly totalChargeTime: number,
     public readonly avgChargeTime: number,
     public readonly totalMiningPower: number,
@@ -304,15 +228,22 @@ export class Leaderboard {
     public readonly totalNftPower: number,
     public readonly avgNftPower: number,
     public readonly lands: bigint[],
-    public readonly landsMinedOn: number,
     public readonly planets: string[],
-    public readonly planetsMinedOn: number,
     public readonly lastUpdateTimestamp: Date,
     public readonly lastUpdateId: string,
     public readonly rankings: Map<string, number>,
-    public readonly id: string,
-    public readonly rest: object
+    public readonly id: string
   ) {}
+
+  public get uniqueToolsUsed(): number {
+    return this.toolsUsed.length;
+  }
+  public get landsMinedOn(): number {
+    return this.lands.length;
+  }
+  public get planetsMinedOn(): number {
+    return this.planets.length;
+  }
 
   /**
    *
@@ -322,8 +253,8 @@ export class Leaderboard {
     const {
       id,
       lastUpdateTimestamp,
-      startTimestamp,
-      endTimestamp,
+      lastBlockNumber,
+      lastBlockTimestamp,
       walletId,
       username,
       tlmGainsTotal,
@@ -341,15 +272,15 @@ export class Leaderboard {
       landsMinedOn,
       planets,
       planetsMinedOn,
-      lastUpdateId: lastUpdateHash,
+      lastUpdateId,
       rankings,
     } = this;
 
     const document: LeaderboardDocument = {
       last_update_timestamp: lastUpdateTimestamp,
-      last_update_hash: lastUpdateHash,
-      start_timestamp: startTimestamp,
-      end_timestamp: endTimestamp,
+      last_update_id: lastUpdateId,
+      last_block_number: MongoDB.Long.fromBigInt(lastBlockNumber),
+      last_block_timestamp: lastBlockTimestamp,
       username,
       wallet_id: walletId,
       tlm_gains_total: tlmGainsTotal,
@@ -383,12 +314,12 @@ export class Leaderboard {
     return removeUndefinedProperties<LeaderboardDocument>(document);
   }
 
-  public toStruct(): LeaderboardStruct {
+  public toJson(): LeaderboardJson {
     const {
       lastUpdateTimestamp,
-      lastUpdateId: lastUpdateHash,
-      startTimestamp,
-      endTimestamp,
+      lastUpdateId,
+      lastBlockNumber,
+      lastBlockTimestamp,
       walletId,
       username,
       tlmGainsTotal,
@@ -408,11 +339,11 @@ export class Leaderboard {
       lands,
     } = this;
 
-    const struct: LeaderboardStruct = {
+    const struct: LeaderboardJson = {
       last_update_timestamp: lastUpdateTimestamp.toISOString(),
-      last_update_hash: lastUpdateHash,
-      start_timestamp: startTimestamp.toISOString(),
-      end_timestamp: endTimestamp.toISOString(),
+      last_update_id: lastUpdateId,
+      last_block_number: lastBlockNumber.toString(),
+      last_block_timestamp: lastBlockTimestamp.toISOString(),
       username,
       wallet_id: walletId,
       tlm_gains_total: tlmGainsTotal,
@@ -438,6 +369,6 @@ export class Leaderboard {
       });
     }
 
-    return removeUndefinedProperties<LeaderboardStruct>(struct);
+    return removeUndefinedProperties<LeaderboardJson>(struct);
   }
 }

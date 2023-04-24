@@ -31,11 +31,11 @@ export class LeaderboardUpdate {
     } = document;
 
     return new LeaderboardUpdate(
+      parseToBigInt(block_number),
+      block_timestamp,
       wallet_id,
       username,
       bounty,
-      parseToBigInt(block_number),
-      block_timestamp,
       points,
       land_id ? parseToBigInt(land_id) : null,
       planet_name,
@@ -52,11 +52,11 @@ export class LeaderboardUpdate {
   ): LeaderboardUpdate {
     const { miner, bounty, land_id, planet_name, bag_items } = json;
     return new LeaderboardUpdate(
+      parseToBigInt(blockNumber),
+      blockTimestamp,
       miner,
       '',
       Number(bounty),
-      parseToBigInt(blockNumber),
-      blockTimestamp,
       0,
       parseToBigInt(land_id),
       planet_name,
@@ -72,11 +72,11 @@ export class LeaderboardUpdate {
   ): LeaderboardUpdate {
     const { user, points } = json;
     return new LeaderboardUpdate(
+      parseToBigInt(blockNumber),
+      blockTimestamp,
       user,
       '',
       0,
-      parseToBigInt(blockNumber),
-      blockTimestamp,
       points,
       0n,
       '',
@@ -92,11 +92,11 @@ export class LeaderboardUpdate {
   ): LeaderboardUpdate {
     const { tag, account } = json;
     return new LeaderboardUpdate(
+      parseToBigInt(blockNumber),
+      blockTimestamp,
       account,
       tag,
       0,
-      parseToBigInt(blockNumber),
-      blockTimestamp,
       0,
       0n,
       '',
@@ -109,11 +109,11 @@ export class LeaderboardUpdate {
    * @constructor
    */
   protected constructor(
+    public readonly blockNumber: bigint,
+    public readonly blockTimestamp: Date,
     public readonly walletId: string,
     public readonly username: string,
     public readonly bounty: number,
-    public readonly blockNumber: bigint,
-    public readonly blockTimestamp: Date,
     public readonly points: number,
     public readonly landId: bigint,
     public readonly planetName: string,

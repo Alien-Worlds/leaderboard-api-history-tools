@@ -5,13 +5,12 @@ import {
   UpdateStatus,
   UseCase,
 } from '@alien-worlds/api-core';
-import { UpdateDailyLeaderboardUseCase } from './update-leaderboard-within-timeframe.use-case';
-import { UpdateMonthlyLeaderboardUseCase } from './update-monthly-leaderboard.use-case';
-import { UpdateWeeklyLeaderboardUseCase } from './update-weekly-leaderboard.use-case';
 import { LeaderboardUpdate } from '../entities/leaderboard-update';
-import { GetAtomicAssetsUseCase } from '../../../atomic-assets/domain/use-cases/get-atomic-assets.use-case';
-import { AtomicAsset } from '@alien-worlds/alienworlds-api-common';
 import { MinigToolData } from '../../data/leaderboard.dtos';
+import { AtomicAsset } from '@alien-worlds/alienworlds-api-common';
+import { LeaderboardUpdateError } from '../errors/leaderboard-update.error';
+import { UpdateLeaderboardWithinTimeframeUseCase } from './update-leaderboard-within-timeframe.use-case';
+import { LeaderboardTimeframe } from '../leaderboard.enums';
 
 /*imports*/
 /**
@@ -24,39 +23,27 @@ export class UpdateLeaderboardUseCase
   public static Token = 'UPDATE_LEADERBOARD_USE_CASE';
 
   constructor(
-    @inject(UpdateDailyLeaderboardUseCase.Token)
-    private updateDailyLeaderboardUseCase: UpdateDailyLeaderboardUseCase,
-    @inject(UpdateWeeklyLeaderboardUseCase.Token)
-    private updateWeeklyLeaderboardUseCase: UpdateWeeklyLeaderboardUseCase,
-    @inject(UpdateMonthlyLeaderboardUseCase.Token)
-    private updateMonthlyLeaderboardUseCase: UpdateMonthlyLeaderboardUseCase,
-    @inject(GetAtomicAssetsUseCase.Token)
-    private getAtomicAssetsUseCase: GetAtomicAssetsUseCase
+    @inject(UpdateLeaderboardWithinTimeframeUseCase.Token)
+    private updateLeaderboardWithinTimeframeUseCase: UpdateLeaderboardWithinTimeframeUseCase
   ) {}
 
   /**
    * @async
    */
   public async execute(
-    updates: LeaderboardUpdate[]
-  ): Promise<Result<UpdateStatus.Success | UpdateStatus.Failure>> {
-    const assetIds = updates.reduce((list, update) => {
-      list.push(...update.bagItems);
-      return list;
-    }, []);
-    const { content, failure: assetsFailure } = await this.getAtomicAssetsUseCase.execute(
-      assetIds
-    );
-    const assets = content as AtomicAsset<MinigToolData>[];
-
-    if (assetsFailure) {
-      return Result.withFailure(assetsFailure);
-    }
-
+    updates: LeaderboardUpdate[],
+    assets?: AtomicAsset<MinigToolData>[]
+  ): Promise<
+    Result<UpdateStatus.Success | UpdateStatus.Failure, LeaderboardUpdateError>
+  > {
     /*
      * UPDATE DAILY LEADERBOARD
      */
-    const dailyUpdate = await this.updateDailyLeaderboardUseCase.execute(updates, assets);
+    const dailyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
+      LeaderboardTimeframe.Daily,
+      updates,
+      assets
+    );
 
     if (dailyUpdate.isFailure) {
       return Result.withFailure(dailyUpdate.failure);
@@ -66,7 +53,8 @@ export class UpdateLeaderboardUseCase
      * UPDATE WEEKLY LEADERBOARD
      */
 
-    const weeklyUpdate = await this.updateWeeklyLeaderboardUseCase.execute(
+    const weeklyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
+      LeaderboardTimeframe.Weekly,
       updates,
       assets
     );
@@ -79,7 +67,8 @@ export class UpdateLeaderboardUseCase
      * UPDATE MONTHLY LEADERBOARD
      */
 
-    const monthlyUpdate = await this.updateMonthlyLeaderboardUseCase.execute(
+    const monthlyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
+      LeaderboardTimeframe.Monthly,
       updates,
       assets
     );

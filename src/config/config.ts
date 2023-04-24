@@ -1,9 +1,10 @@
-import { BroadcastConfig, ConfigVars, buildMongoConfig } from '@alien-worlds/api-core';
+import { ConfigVars, buildMongoConfig } from '@alien-worlds/api-core';
 import { ExtendedLeaderboardServiceConfig, CronConfig } from './config.types';
 import { AtomicAssetsConfig } from '@alien-worlds/alienworlds-api-common';
 
 export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
   leaderboardUpdateTime: vars.getStringEnv('LEADERBOARD_UPDATE_CRON_TIME'),
+  leaderboardUpdateBatchSize: vars.getNumberEnv('CRON_LEADERBOARD_UPDATE_BATCH_SIZE'),
 });
 
 export const buildLeaderboardServiceConfig = (
@@ -23,9 +24,10 @@ export const buildLeaderboardServiceConfig = (
 
 export const buildAtomicAssetsConfig = (vars: ConfigVars): AtomicAssetsConfig => ({
   api: {
-    host: vars.getStringEnv('ATOMICASSETS_API_HOST'),
-    port: vars.getNumberEnv('ATOMICASSETS_API_PORT'),
-    secure: vars.getBooleanEnv('ATOMICASSETS_API_SECURE'),
+    host: vars.getStringEnv('ATOMIC_ASSETS_API_HOST'),
+    port: vars.getNumberEnv('ATOMIC_ASSETS_API_PORT'),
+    secure: vars.getBooleanEnv('ATOMIC_ASSETS_API_SECURE'),
+    maxAssetsPerRequest: vars.getNumberEnv('ATOMIC_ASSETS_API_MAX_ASSETS_PER_REQUEST'),
   },
   mongo: buildMongoConfig(vars),
 });

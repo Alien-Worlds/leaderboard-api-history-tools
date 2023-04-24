@@ -1,4 +1,4 @@
-import { MongoDB } from "@alien-worlds/api-core";
+import { MongoDB } from '@alien-worlds/api-core';
 
 export type LeaderboardUpdateStruct = {
   wallet_id: string;
@@ -42,8 +42,8 @@ export type LeaderboardNumbers = {
 
 export type LeaderboardDocument = LeaderboardNumbers & {
   _id?: MongoDB.ObjectId;
-  start_timestamp?: Date;
-  end_timestamp?: Date;
+  last_block_number?: MongoDB.Long;
+  last_block_timestamp?: Date;
   last_update_timestamp?: Date;
   last_update_id?: string;
   wallet_id?: string;
@@ -55,6 +55,9 @@ export type LeaderboardDocument = LeaderboardNumbers & {
   total_nft_power?: number;
   lands?: MongoDB.Long[];
   planets?: string[];
+  lands_mined_on?: number;
+  planets_mined_on?: number;
+  unique_tools_used?: number;
   rankings?: LeaderboardNumbers;
   [key: string]: unknown;
 };
@@ -65,11 +68,11 @@ export type MinigToolData = {
   difficulty: number;
 };
 
-export type LeaderboardStruct = LeaderboardNumbers & {
-  start_timestamp?: string;
-  end_timestamp?: string;
+export type LeaderboardJson = LeaderboardNumbers & {
+  last_block_number?: string;
+  last_block_timestamp?: string;
   last_update_timestamp?: string;
-  last_update_hash?: string;
+  last_update_id?: string;
   last_update_completed?: boolean;
   wallet_id?: string;
   username?: string;
@@ -80,6 +83,9 @@ export type LeaderboardStruct = LeaderboardNumbers & {
   total_nft_power?: number;
   lands?: string[];
   planets?: string[];
+  lands_mined_on?: number;
+  planets_mined_on?: number;
+  unique_tools_used?: number;
   rankings?: LeaderboardNumbers;
   [key: string]: unknown;
 };

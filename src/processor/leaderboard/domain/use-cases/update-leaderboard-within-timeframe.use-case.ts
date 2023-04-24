@@ -16,6 +16,9 @@ import { WeeklyLeaderboardRepository } from '../repositories/weekly-leaderboard.
 import { MonthlyLeaderboardRepository } from '../repositories/monthly-leaderboard.repository';
 import { LeaderboardRepository } from '../repositories/leaderboard.repository';
 import { UnknownLeaderboardTimeframeError } from '../errors/unknown-leaderboard-timeframe.error';
+import { CreateUserLeaderboardUseCase } from './create-user-leaderboard.use-case';
+import { UpdateUserLeaderboardUseCase } from './update-user-leaderboard.use-case';
+import { LeaderboardUpdateError } from '../errors/leaderboard-update.error';
 
 /*imports*/
 /**
@@ -33,19 +36,25 @@ export class UpdateLeaderboardWithinTimeframeUseCase
     @inject(WeeklyLeaderboardRepository.Token)
     private weeklyLeaderboardRepository: WeeklyLeaderboardRepository,
     @inject(MonthlyLeaderboardRepository.Token)
-    private monthlyLeaderboardRepository: MonthlyLeaderboardRepository
+    private monthlyLeaderboardRepository: MonthlyLeaderboardRepository,
+    @inject(CreateUserLeaderboardUseCase.Token)
+    private createLeaderboardEntryUseCase: CreateUserLeaderboardUseCase,
+    @inject(UpdateUserLeaderboardUseCase.Token)
+    private updateLeaderboardEntryUseCase: UpdateUserLeaderboardUseCase
   ) {}
 
   /**
    * @async
    */
   public async execute(
+    timeframe: LeaderboardTimeframe,
     updates: LeaderboardUpdate[],
-    assets: AtomicAsset<MinigToolData>[],
-    timeframe: LeaderboardTimeframe
-  ): Promise<Result<UpdateStatus.Success | UpdateStatus.Failure>> {
+    assets?: AtomicAsset<MinigToolData>[]
+  ): Promise<
+    Result<UpdateStatus.Success | UpdateStatus.Failure, LeaderboardUpdateError>
+  > {
     const newUpdates: Leaderboard[] = [];
-
+    const failedUpdates: LeaderboardUpdate[] = [];
     let repository: LeaderboardRepository;
 
     if (timeframe === LeaderboardTimeframe.Daily) {
@@ -56,57 +65,72 @@ export class UpdateLeaderboardWithinTimeframeUseCase
       repository = this.monthlyLeaderboardRepository;
     } else {
       return Result.withFailure(
-        Failure.fromError(new UnknownLeaderboardTimeframeError(timeframe))
+        Failure.fromError(
+          new LeaderboardUpdateError(
+            updates.length,
+            updates,
+            new UnknownLeaderboardTimeframeError(timeframe)
+          )
+        )
       );
     }
 
-    // We can't fetch the data of all users from the list at once
-    // because the leaderboard timeframes of individual players may differ from each other
-    // We have to fetch data one at a time
+    const wallets = updates.map(update => update.walletId);
+
+    const leaderboardSearch = await repository.findUsers(wallets);
+
+    if (leaderboardSearch.isFailure) {
+      return Result.withFailure(
+        Failure.fromError(new LeaderboardUpdateError(updates.length, updates))
+      );
+    }
+
     for (const update of updates) {
-      const {
-        username,
-        walletId,
-        bounty,
-        points,
-        landId,
-        planetName,
-        blockNumber,
-        blockTimestamp,
-      } = update;
+      const userLeaderboard = leaderboardSearch.content.filter(
+        row => row.walletId === update.walletId
+      )[0];
 
-      const usedAssets = assets.get(update.id);
-      const { content: usersFound, failure: userSearchFailure } =
-        await repository.findUsers([walletId]);
-
-      if (userSearchFailure) {
-        return Result.withFailure(userSearchFailure);
-      }
-
-      if (usersFound.length === 0) {
-        newUpdates.push(
-          Leaderboard.create(
-            blockNumber,
-            blockTimestamp,
-            walletId,
-            username,
-            bounty,
-            points,
-            landId,
-            planetName,
-            usedAssets
-          )
+      if (!userLeaderboard) {
+        const newLeaderboard = await this.createLeaderboardEntryUseCase.execute(
+          update,
+          assets
         );
-      } else {
-        const current = usersFound[0];
-        //
-        if (current.lastUpdateId !== update.id) {
-          newUpdates.push(Leaderboard.cloneAndUpdate(current, update, usedAssets));
+
+        if (newLeaderboard.isFailure) {
+          failedUpdates.push(update);
+          continue;
         }
+
+        newUpdates.push(newLeaderboard.content);
+      } else {
+        const updatedLeaderboard = await this.updateLeaderboardEntryUseCase.execute(
+          userLeaderboard,
+          update,
+          assets
+        );
+
+        if (updatedLeaderboard.isFailure) {
+          failedUpdates.push(update);
+          continue;
+        }
+
+        newUpdates.push(updatedLeaderboard.content);
       }
     }
 
-    return repository.update(newUpdates);
+    if (newUpdates.length > 0) {
+      const updateResult = await repository.update(newUpdates);
+      
+      if (updateResult.isFailure) {
+        failedUpdates.push(...updates);
+      }
+    }
+
+    if (failedUpdates.length > 0) {
+      return Result.withFailure(
+        Failure.fromError(new LeaderboardUpdateError(updates.length, failedUpdates))
+      );
+    }
   }
 
   /*methods*/

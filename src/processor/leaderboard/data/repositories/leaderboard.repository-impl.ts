@@ -32,7 +32,7 @@ export class LeaderboardRepositoryImpl implements LeaderboardRepository {
         (now >= fromDate.getTime() && now <= toDate.getTime())
       ) {
         const structs = await redisSource.findUsers(walletIds);
-        return Result.withContent(structs.map(Leaderboard.fromStruct));
+        return Result.withContent(structs.map(Leaderboard.fromJson));
       }
 
       const documents = await mongoSource.find({
@@ -73,7 +73,7 @@ export class LeaderboardRepositoryImpl implements LeaderboardRepository {
         (now >= fromDate.getTime() && now <= toDate.getTime())
       ) {
         const structs = await redisSource.list({ sort, offset, limit, order });
-        return Result.withContent(structs.map(Leaderboard.fromStruct));
+        return Result.withContent(structs.map(Leaderboard.fromJson));
       }
 
       const documents = await mongoSource.find({
@@ -135,7 +135,7 @@ export class LeaderboardRepositoryImpl implements LeaderboardRepository {
     leaderboards: Leaderboard[]
   ): Promise<Result<UpdateStatus.Success | UpdateStatus.Failure>> {
     try {
-      const structs = leaderboards.map(leaderboard => leaderboard.toStruct());
+      const structs = leaderboards.map(leaderboard => leaderboard.toJson());
 
       await this.redisSource.update(structs);
 
@@ -160,7 +160,7 @@ export class LeaderboardRepositoryImpl implements LeaderboardRepository {
           offset: round * batchSize,
           limit: batchSize,
         });
-        const documents = list.map(item => Leaderboard.fromStruct(item).toDocument());
+        const documents = list.map(item => Leaderboard.fromJson(item).toDocument());
         await mongoSource.insertMany(documents);
 
         round++;

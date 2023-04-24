@@ -9,6 +9,7 @@ import {
 } from '@alien-worlds/api-core';
 import { AtomicAssetsPartialFetchError } from '../errors/atomic-assets-partial-fetch.error';
 import { GetAtomicAssetsError } from '../errors/get-atomic-assets.error';
+import { MinigToolData } from '../../../leaderboard/data/leaderboard.dtos';
 /*imports*/
 
 export const splitToChunks = <T = unknown>(items: T[], chunkSize: number) => {
@@ -37,11 +38,13 @@ export class GetAtomicAssetsUseCase implements UseCase<AtomicAsset[]> {
   /**
    * @async
    */
-  public async execute(ids: bigint[]): Promise<Result<AtomicAsset[]>> {
+  public async execute(
+    ids: bigint[],
+    chunkSize: number
+  ): Promise<Result<AtomicAsset<MinigToolData>[], GetAtomicAssetsError>> {
     const assets = [];
-    const chunks = splitToChunks(ids, 10);
-    let fetchFailureCount = 0;
-    let partialFetchCount = 0;
+    const chunks = splitToChunks(ids, chunkSize);
+    const failed = [];
 
     for (const chunk of chunks) {
       const { content, failure: atomicAssetsFailure } =
@@ -49,25 +52,23 @@ export class GetAtomicAssetsUseCase implements UseCase<AtomicAsset[]> {
 
       if (atomicAssetsFailure) {
         log(atomicAssetsFailure.error.message);
-        fetchFailureCount++;
+        failed.push(...chunk);
         continue;
       }
 
       if (assets.length < chunk.length) {
         log(new AtomicAssetsPartialFetchError(assets.length, chunk.length).message);
-        partialFetchCount++;
+        failed.push(...chunk);
         continue;
       }
 
       assets.push(...content);
     }
 
-    return fetchFailureCount + partialFetchCount < ids.length
+    return failed.length === 0
       ? Result.withContent(assets)
       : Result.withFailure(
-          Failure.fromError(
-            new GetAtomicAssetsError(ids.length, fetchFailureCount, partialFetchCount)
-          )
+          Failure.fromError(new GetAtomicAssetsError(ids.length, failed, assets))
         );
   }
   /*methods*/

@@ -5,7 +5,6 @@ import {
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
-import { UpdateLeaderboardUseCase } from '../../leaderboard/domain/use-cases/update-leaderboard.use-case';
 import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
 import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
 
@@ -19,9 +18,6 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
       const { input, ioc } = this;
       const { blockNumber, blockTimestamp, name, data } = input;
 
-      const updateLeaderboardUseCase = ioc.get<UpdateLeaderboardUseCase>(
-        UpdateLeaderboardUseCase.Token
-      );
       const leaderboardUpdates = ioc.get<LeaderboardUpdateRepository>(
         LeaderboardUpdateRepository.Token
       );
@@ -32,20 +28,12 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
           blockTimestamp,
           <NotifyWorldContract.Actions.Types.LogmineStruct>data
         );
-        const { failure: updateFailure } = await updateLeaderboardUseCase.execute([
-          update,
-        ]);
 
-        if (updateFailure) {
-          log(updateFailure.error);
-          const backupResult = await leaderboardUpdates.add([update]);
-          if (backupResult.isFailure) {
-            log(backupResult.failure.error);
-          }
-          this.reject(updateFailure.error);
-        } else {
-          this.resolve();
+        const { failure } = await leaderboardUpdates.add([update]);
+        if (failure) {
+          log(failure.error);
         }
+        this.reject(failure.error);
       } else {
         this.resolve();
       }

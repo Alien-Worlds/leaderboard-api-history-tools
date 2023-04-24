@@ -5,7 +5,7 @@ import {
   SortedCollectionRedisSource,
 } from '@alien-worlds/api-core';
 import {
-  LeaderboardStruct,
+  LeaderboardJson,
   LeaderboardUserRankingsStruct,
   LeaderboardUserScoresStruct,
 } from '../leaderboard.dtos';
@@ -59,7 +59,7 @@ export class LeaderboardRedisSource {
     );
   }
 
-  public async update(leaderboards: LeaderboardStruct[]) {
+  public async update(leaderboards: LeaderboardJson[]) {
     const tlmGainsTotal = [];
     const totalNftPoints = [];
     const uniqueToolsUsed = [];
@@ -114,9 +114,7 @@ export class LeaderboardRedisSource {
   ): Promise<LeaderboardUserRankingsStruct> {
     const result = {};
     const rankKeys =
-      Array.isArray(keys) && keys.length > 0
-        ? keys
-        : Object.values(LeaderboardSort);
+      Array.isArray(keys) && keys.length > 0 ? keys : Object.values(LeaderboardSort);
     for (const walletId of wallets) {
       const scores = {};
       for (const key of rankKeys) {
@@ -132,9 +130,9 @@ export class LeaderboardRedisSource {
     return result;
   }
 
-  public async getUsersData(wallets: string[]): Promise<LeaderboardStruct[]> {
+  public async getUsersData(wallets: string[]): Promise<LeaderboardJson[]> {
     const structs = await this.data.list(wallets);
-    return Object.values(structs).reduce<LeaderboardStruct[]>((list, str) => {
+    return Object.values(structs).reduce<LeaderboardJson[]>((list, str) => {
       if (str) {
         list.push(JSON.parse(str));
       }
@@ -147,9 +145,7 @@ export class LeaderboardRedisSource {
     keys?: string[]
   ): Promise<LeaderboardUserScoresStruct> {
     const props =
-      Array.isArray(keys) && keys.length > 0
-        ? keys
-        : Object.values(LeaderboardSort);
+      Array.isArray(keys) && keys.length > 0 ? keys : Object.values(LeaderboardSort);
     const result = {};
     for (const walletId of wallets) {
       const scores = {};
@@ -188,13 +184,13 @@ export class LeaderboardRedisSource {
     offset?: number;
     limit?: number;
     order?: number;
-  }): Promise<LeaderboardStruct[]> {
+  }): Promise<LeaderboardJson[]> {
     const { sort } = options;
     const offset = options.offset || 0;
     const limit = options.limit || 10;
     const order = options.order || -1;
     const sorts = [];
-    const structsByWallets = new Map<string, LeaderboardStruct>();
+    const structsByWallets = new Map<string, LeaderboardJson>();
 
     if (sort && this.collections.has(sort)) {
       sorts.push(sort);
@@ -226,7 +222,7 @@ export class LeaderboardRedisSource {
   public async findUsers(
     wallets: string[],
     rankOrder?: number
-  ): Promise<LeaderboardStruct[]> {
+  ): Promise<LeaderboardJson[]> {
     const usersData = await this.getUsersData(wallets);
     const usersRankings = await this.getRankings(wallets, [], rankOrder);
     const structs = [];
