@@ -23,5 +23,6 @@ export type ExtendedLeaderboardConfig = LeaderboardServiceConfig & {
 
 export type CronConfig = {
   leaderboardUpdateTime: string;
+  atomicAssetsDownloadTime: string;
   leaderboardUpdateBatchSize: number;
 };

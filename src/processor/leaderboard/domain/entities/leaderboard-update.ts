@@ -9,7 +9,10 @@ import {
   NotifyWorldContract,
   UsptsWorldsContract,
 } from '@alien-worlds/alienworlds-api-common';
-import { LeaderboardUpdateDocument } from '../../data/leaderboard.dtos';
+import {
+  LeaderboardUpdateDocument,
+  LeaderboardUpdateJson,
+} from '../../data/leaderboard.dtos';
 
 /**
  * @class
@@ -107,6 +110,36 @@ export class LeaderboardUpdate {
     );
   }
 
+  public static fromJson(json: LeaderboardUpdateJson): LeaderboardUpdate {
+    const {
+      wallet_id,
+      block_number,
+      block_timestamp,
+      username,
+      bounty,
+      points,
+      land_id,
+      planet_name,
+      bag_items,
+      update_id,
+      id,
+    } = json;
+
+    return new LeaderboardUpdate(
+      parseToBigInt(block_number),
+      new Date(block_timestamp),
+      wallet_id,
+      username,
+      bounty,
+      points,
+      parseToBigInt(land_id),
+      planet_name,
+      bag_items.map(parseToBigInt),
+      update_id,
+      id
+    );
+  }
+
   /**
    * @constructor
    */
@@ -139,7 +172,7 @@ export class LeaderboardUpdate {
       points,
       landId,
       planetName,
-      bagItems: tools,
+      bagItems: bag_items,
       updateId: update_id,
     } = this;
 
@@ -158,8 +191,8 @@ export class LeaderboardUpdate {
       document.land_id = MongoDB.Long.fromBigInt(landId);
     }
 
-    if (tools) {
-      document.tools = tools.map(tool => MongoDB.Long.fromBigInt(tool));
+    if (bag_items) {
+      document.bag_items = bag_items.map(tool => MongoDB.Long.fromBigInt(tool));
     }
 
     if (id && MongoDB.ObjectId.isValid(id)) {
@@ -167,5 +200,46 @@ export class LeaderboardUpdate {
     }
 
     return removeUndefinedProperties<LeaderboardUpdateDocument>(document);
+  }
+
+  public toJson(): LeaderboardUpdateJson {
+    const {
+      id,
+      walletId,
+      username,
+      bounty,
+      blockNumber,
+      blockTimestamp,
+      points,
+      landId,
+      planetName,
+      bagItems: bag_items,
+      updateId: update_id,
+    } = this;
+
+    const json: LeaderboardUpdateJson = {
+      block_number: blockNumber.toString(),
+      block_timestamp: blockTimestamp.toISOString(),
+      username,
+      wallet_id: walletId,
+      bounty,
+      points,
+      planet_name: planetName,
+      update_id,
+    };
+
+    if (landId) {
+      json.land_id = landId.toString();
+    }
+
+    if (bag_items) {
+      json.bag_items = bag_items.map(tool => tool.toString());
+    }
+
+    if (id) {
+      json.id = id;
+    }
+
+    return removeUndefinedProperties<LeaderboardUpdateJson>(json);
   }
 }

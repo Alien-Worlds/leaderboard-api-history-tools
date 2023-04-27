@@ -93,12 +93,12 @@ export const buildLeaderboardRequest = (
   sharedData: ProcessorSharedData,
   users: User[]
 ): LeaderboardUpdateStruct[] => {
-  const { leaderboard } = sharedData;
+  const { updates } = sharedData;
   const structs: (
     | NotifyWorldContract.Actions.Types.LogmineStruct
     | UsptsWorldsContract.Actions.Types.AddpointsStruct
     | FederationContract.Actions.Types.SettagStruct
-  )[] = leaderboard.splice(0);
+  )[] = updates.splice(0);
 
   return structs.map(struct => {
     if (struct.user && struct.points) {

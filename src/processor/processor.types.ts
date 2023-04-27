@@ -1,11 +1,7 @@
-import {
-  AtomicAssetsConfig,
-  NotifyWorldContract,
-  UsptsWorldsContract,
-  FederationContract,
-} from '@alien-worlds/alienworlds-api-common';
+import { AtomicAssetsConfig } from '@alien-worlds/alienworlds-api-common';
 import { BroadcastConfig, MongoConfig } from '@alien-worlds/api-core';
 import { ExtendedLeaderboardConfig } from '../config';
+import { LeaderboardUpdateJson } from './leaderboard/data/leaderboard.dtos';
 
 export type ProcessorSharedData = {
   config: {
@@ -14,9 +10,6 @@ export type ProcessorSharedData = {
     atomicassets: AtomicAssetsConfig;
     broadcast: BroadcastConfig;
   };
-  leaderboard: (
-    | NotifyWorldContract.Actions.Types.LogmineStruct
-    | UsptsWorldsContract.Actions.Types.AddpointsStruct
-    | FederationContract.Actions.Types.SettagStruct
-  )[];
+  updates: LeaderboardUpdateJson[];
+  assets: bigint[];
 };

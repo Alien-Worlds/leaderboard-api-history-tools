@@ -29,6 +29,21 @@ export type LeaderboardUpdateDocument = {
   [key: string]: unknown;
 };
 
+export type LeaderboardUpdateJson = {
+  wallet_id?: string;
+  block_number?: string;
+  block_timestamp?: string;
+  username?: string;
+  bounty?: number;
+  points?: number;
+  land_id?: string;
+  planet_name?: string;
+  bag_items?: string[];
+  update_id?: string;
+  id?: string;
+  [key: string]: unknown;
+};
+
 export type LeaderboardNumbers = {
   tlm_gains_total?: number;
   total_nft_points?: number;

@@ -3,12 +3,13 @@ import { AtomicAsset } from '../entities/atomic-asset';
 import { GetAtomicAssetsError } from '../errors/get-atomic-assets.error';
 /*imports*/
 
-export abstract class AtomicAssetRepository {
-  public static Token = 'ATOMIC_ASSET_REPOSITORY';
+export abstract class AtomicAssetsService {
+  public static Token = 'ATOMIC_ASSETS_SERVICE';
 
   public abstract getAssets(
     assetIds: Array<string | number | bigint>,
-    fetchMissingAsset: boolean
+    fetchMissingAssets?: boolean,
   ): Promise<Result<AtomicAsset[], GetAtomicAssetsError>>;
+  public abstract isAvailable(): boolean;
   /*methods*/
 }

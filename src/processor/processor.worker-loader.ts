@@ -10,18 +10,23 @@ import NotifyWorldActionProcessor from './processors/notify-world/notify-world.a
 import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
 import FederationActionProcessor from './processors/federation/federation-world.action-processor';
 import { setupLeaderboard } from './leaderboard/ioc.config';
+import { setupAtomicAssets } from './atomic-assets/ioc.config';
 
-export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
+export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
   private container = new WorkerContainer();
   private ioc: Container;
+  private maxAssetsPerRequest: number;
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
     super.setup(sharedData);
     const {
-      config: { leaderboard },
+      config: { mongo, leaderboard, atomicassets },
     } = sharedData;
     this.ioc = new Container();
-    await setupLeaderboard(leaderboard, null, this.ioc);
+    const mongoSource = await MongoSource.create(mongo);
+    await setupAtomicAssets(atomicassets, mongoSource, this.ioc);
+    await setupLeaderboard(leaderboard, mongoSource, this.ioc);
+    this.maxAssetsPerRequest = atomicassets.api.maxAssetsPerRequest;
     // 'uspts.worlds'
     this.container.bind(
       ProcessorLabel.UsptsWorldsActionProcessor,
@@ -40,10 +45,12 @@ export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
   }
 
   public async load(pointer: string) {
-    const { ioc } = this;
+    const { ioc, sharedData, maxAssetsPerRequest } = this;
     const Class = this.container.get(pointer);
     const worker: Worker = new Class({
       ioc,
+      sharedData,
+      maxAssetsPerRequest,
     }) as Worker;
     return worker;
   }

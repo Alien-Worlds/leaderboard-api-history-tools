@@ -36,42 +36,31 @@ export class UpdateLeaderboardUseCase
   ): Promise<
     Result<UpdateStatus.Success | UpdateStatus.Failure, LeaderboardUpdateError>
   > {
-    /*
-     * UPDATE DAILY LEADERBOARD
-     */
-    const dailyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
-      LeaderboardTimeframe.Daily,
-      updates,
-      assets
-    );
+    const [dailyUpdate, weeklyUpdate, monthlyUpdate] = await Promise.all([
+      this.updateLeaderboardWithinTimeframeUseCase.execute(
+        LeaderboardTimeframe.Daily,
+        updates,
+        assets
+      ),
+      this.updateLeaderboardWithinTimeframeUseCase.execute(
+        LeaderboardTimeframe.Weekly,
+        updates,
+        assets
+      ),
+      this.updateLeaderboardWithinTimeframeUseCase.execute(
+        LeaderboardTimeframe.Monthly,
+        updates,
+        assets
+      ),
+    ]);
 
     if (dailyUpdate.isFailure) {
       return Result.withFailure(dailyUpdate.failure);
     }
 
-    /*
-     * UPDATE WEEKLY LEADERBOARD
-     */
-
-    const weeklyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
-      LeaderboardTimeframe.Weekly,
-      updates,
-      assets
-    );
-
     if (weeklyUpdate.isFailure) {
       return Result.withFailure(weeklyUpdate.failure);
     }
-
-    /*
-     * UPDATE MONTHLY LEADERBOARD
-     */
-
-    const monthlyUpdate = await this.updateLeaderboardWithinTimeframeUseCase.execute(
-      LeaderboardTimeframe.Monthly,
-      updates,
-      assets
-    );
 
     if (monthlyUpdate.isFailure) {
       return Result.withFailure(monthlyUpdate.failure);

@@ -7,6 +7,8 @@ import { AtomicAssetsApiSource } from './data/data-sources/atomic-assets.api.sou
 import { AtomicAssetsMongoSource } from './data/data-sources/atomic-assets.mongo.source';
 import { AtomicAssetMapper } from './data/mappers/atomic-asset.mapper';
 import { GetAtomicAssetsUseCase } from './domain/use-cases/get-atomic-assets.use-case';
+import { AtomicAssetsServiceImpl } from './data/services/atomic-assets.service-impl';
+import { AtomicAssetsService } from './domain/services/atomic-assets.service';
 
 export const setupAtomicAssets = async (
   config: AtomicAssetsConfig,
@@ -29,10 +31,15 @@ export const setupAtomicAssets = async (
     new AtomicAssetMapper()
   );
 
+  const serviceImpl = new AtomicAssetsServiceImpl(repository, config.api);
+
   if (container) {
     container
       .bind<AtomicAssetRepository>(AtomicAssetRepository.Token)
       .toConstantValue(repository);
+    container
+      .bind<AtomicAssetsService>(AtomicAssetsService.Token)
+      .toConstantValue(serviceImpl);
     container
       .bind<GetAtomicAssetsUseCase>(GetAtomicAssetsUseCase.Token)
       .to(GetAtomicAssetsUseCase);

@@ -10,18 +10,8 @@ import {
 import { AtomicAssetsPartialFetchError } from '../errors/atomic-assets-partial-fetch.error';
 import { GetAtomicAssetsError } from '../errors/get-atomic-assets.error';
 import { MinigToolData } from '../../../leaderboard/data/leaderboard.dtos';
+import { arrayDiff, splitToChunks } from '../../atomic-assets.utils';
 /*imports*/
-
-export const splitToChunks = <T = unknown>(items: T[], chunkSize: number) => {
-  const chunks = [];
-  items = [].concat(...items);
-
-  while (items.length) {
-    chunks.push(items.splice(0, chunkSize));
-  }
-
-  return chunks;
-};
 
 /**
  * @class
@@ -48,7 +38,7 @@ export class GetAtomicAssetsUseCase implements UseCase<AtomicAsset[]> {
 
     for (const chunk of chunks) {
       const { content, failure: atomicAssetsFailure } =
-        await this.atomicAssetRepository.getAssets(chunk);
+        await this.atomicAssetRepository.getAssets(chunk, true);
 
       if (atomicAssetsFailure) {
         log(atomicAssetsFailure.error.message);
@@ -56,9 +46,9 @@ export class GetAtomicAssetsUseCase implements UseCase<AtomicAsset[]> {
         continue;
       }
 
-      if (assets.length < chunk.length) {
-        log(new AtomicAssetsPartialFetchError(assets.length, chunk.length).message);
-        failed.push(...chunk);
+      if (content.length < chunk.length) {
+        log(new AtomicAssetsPartialFetchError(content.length, chunk.length).message);
+        failed.push(...arrayDiff(chunk, content));
         continue;
       }
 

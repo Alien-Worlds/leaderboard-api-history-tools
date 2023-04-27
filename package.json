@@ -20,6 +20,7 @@
     "reader": "node build/reader/index.js",
     "filter": "node build/filter/index.js",
     "processor": "node build/processor/index.js",
+    "updater": "node build/leaderboard-updater/index.js",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "format-check": "prettier --check \"src/\"",

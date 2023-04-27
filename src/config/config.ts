@@ -4,6 +4,7 @@ import { AtomicAssetsConfig } from '@alien-worlds/alienworlds-api-common';
 
 export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
   leaderboardUpdateTime: vars.getStringEnv('LEADERBOARD_UPDATE_CRON_TIME'),
+  atomicAssetsDownloadTime: vars.getStringEnv('ATOMIC_ASSETS_DOWNLOAD_CRON_TIME'),
   leaderboardUpdateBatchSize: vars.getNumberEnv('CRON_LEADERBOARD_UPDATE_BATCH_SIZE'),
 });
 
@@ -28,6 +29,7 @@ export const buildAtomicAssetsConfig = (vars: ConfigVars): AtomicAssetsConfig =>
     port: vars.getNumberEnv('ATOMIC_ASSETS_API_PORT'),
     secure: vars.getBooleanEnv('ATOMIC_ASSETS_API_SECURE'),
     maxAssetsPerRequest: vars.getNumberEnv('ATOMIC_ASSETS_API_MAX_ASSETS_PER_REQUEST'),
+    maxAssetsRequestPerMinute: vars.getNumberEnv('ATOMIC_ASSETS_MAX_ASSETS_REQUESTS_PER_MINUTE'),
   },
   mongo: buildMongoConfig(vars),
 });

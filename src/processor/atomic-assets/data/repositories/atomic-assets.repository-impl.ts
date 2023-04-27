@@ -13,8 +13,7 @@ import { AtomicAssetsApiSource } from '../data-sources/atomic-assets.api.source'
 import { AtomicAssetsMongoSource } from '../data-sources/atomic-assets.mongo.source';
 import { AtomicAssetDocument } from '../dtos/atomic-assets.dto';
 import { AtomicAssetMapper } from '../mappers';
-import { AssetNotFoundError } from '../../domain/errors/asset-not-found.error';
-import { AssetsNotFoundError } from '../../domain/errors/assets-not-found.error';
+import { GetAtomicAssetsError } from '../../domain/errors/get-atomic-assets.error';
 
 export class AtomicAssetRepositoryImpl extends RepositoryImpl<
   AtomicAsset,
@@ -29,8 +28,9 @@ export class AtomicAssetRepositoryImpl extends RepositoryImpl<
   }
 
   public async getAssets(
-    assetIds: Array<string | number | bigint>
-  ): Promise<Result<AtomicAsset[]>> {
+    assetIds: Array<string | number | bigint>,
+    fetchMissingAssets: boolean
+  ): Promise<Result<AtomicAsset[], GetAtomicAssetsError>> {
     const assetsSearch = await this.find({
       filter: {
         asset_id: {
@@ -49,44 +49,44 @@ export class AtomicAssetRepositoryImpl extends RepositoryImpl<
       id => storedAssets.findIndex(asset => asset.assetId === parseToBigInt(id)) === -1
     );
 
-    const structs = await this.api.fetchMany(assetsToFetch);
+    if (fetchMissingAssets) {
+      const response = await this.api.fetchMany(assetsToFetch);
 
-    if (structs.length === 0) {
-      return Result.withFailure(
-        Failure.fromError(new AssetsNotFoundError(assetsToFetch))
-      );
+      if (response.assets.error) {
+        return Result.withFailure(
+          Failure.fromError(
+            new GetAtomicAssetsError(
+              assetsToFetch.length,
+              assetsToFetch.map(parseToBigInt),
+              storedAssets,
+              response.assets.error
+            )
+          )
+        );
+      }
+
+      const newAssets = response.assets.content.map(AtomicAsset.create);
+
+      const assetInsertion = await this.addMany(newAssets);
+
+      if (assetInsertion.isFailure) {
+        log(assetInsertion.failure.error.message);
+      }
+
+      return Result.withContent([...storedAssets, ...newAssets]);
     }
 
-    const newAssets = structs.map(AtomicAsset.create);
-
-    const assetInsertion = await this.addMany(newAssets);
-
-    if (assetInsertion.isFailure) {
-      log(assetInsertion.failure.error);
-    }
-
-    return Result.withContent([...storedAssets, ...newAssets]);
+    return Result.withFailure(
+      Failure.fromError(
+        new GetAtomicAssetsError(
+          assetIds.length,
+          assetsToFetch.map(parseToBigInt),
+          storedAssets,
+          null
+        )
+      )
+    );
   }
 
-  public async getAsset(assetId: string | number | bigint): Promise<Result<AtomicAsset>> {
-    const findAsset = await this.findOne({
-      asset_id: MongoDB.Long.fromString(assetId.toString()),
-    });
-
-    if (findAsset.content) {
-      return findAsset;
-    }
-
-    const struct = await this.api.fetchOne(assetId.toString());
-
-    if (struct) {
-      const asset = AtomicAsset.create(struct);
-      await this.add(asset);
-
-      return Result.withContent(asset);
-    }
-
-    return Result.withFailure(Failure.fromError(new AssetNotFoundError(assetId)));
-  }
   /*methods*/
 }

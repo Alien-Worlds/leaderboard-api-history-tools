@@ -8,7 +8,10 @@ export class LeaderboardActionTraceProcessor<DataType> extends ActionTraceProces
 > {
   protected ioc: Container;
 
-  constructor(components: { ioc: Container; sharedData: ProcessorSharedData }) {
+  constructor(components: {
+    ioc: Container;
+    sharedData: ProcessorSharedData;
+  }) {
     super();
     const { ioc, sharedData } = components;
     this.sharedData = sharedData;

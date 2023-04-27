@@ -136,3 +136,10 @@ export type AtomicAssetDocument<ImmutableDataType = object> = {
   minted_at_time?: Date;
   [key: string]: unknown;
 };
+
+export type AtomicAssetsDownloadDocument = {
+  id?: MongoDB.ObjectId;
+  asset_id?: MongoDB.Long;
+  leaderboard_update_id?: string;
+  [key: string]: unknown;
+};
