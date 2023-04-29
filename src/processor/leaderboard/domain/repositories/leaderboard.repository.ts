@@ -12,6 +12,7 @@ export abstract class LeaderboardRepository {
 
   public abstract findUsers(
     walletIds: string[],
+    includeRankings: boolean,
     fromDate?: Date,
     toDate?: Date
   ): Promise<Result<Leaderboard[], Error>>;

@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CollectionMongoSource, MongoSource } from '@alien-worlds/api-core';
+import {
+  CollectionMongoSource,
+  DataSourceOperationError,
+  MongoSource,
+  UpdateManyResult,
+} from '@alien-worlds/api-core';
 import { LeaderboardDocument } from '../leaderboard.dtos';
 
 /**
  * @class
  */
-export class LeaderboardArchiveMongoSource extends CollectionMongoSource<LeaderboardDocument> {
-  public static Token = 'LEADERBOARD_ARCHIVE_MONGO_SOURCE';
+export class LeaderboardSnapshotMongoSource extends CollectionMongoSource<LeaderboardDocument> {
+  public static Token = 'LEADERBOARD_SNAPSHOT_MONGO_SOURCE';
 
   /**
    * @constructor
@@ -19,7 +24,7 @@ export class LeaderboardArchiveMongoSource extends CollectionMongoSource<Leaderb
         `Invalid leaderboard collection name "${name}". Please use only: a-zA-Z0-9_`
       );
     }
-    super(mongoSource, `leaderboard_${name}`, {
+    super(mongoSource, `leaderboard_snapshot_${name}`, {
       indexes: [
         { key: { username: 1 }, background: true },
         {
@@ -57,8 +62,6 @@ export class LeaderboardArchiveMongoSource extends CollectionMongoSource<Leaderb
         {
           key: {
             wallet_id: 1,
-            start_timestamp: 1,
-            end_timestamp: 1,
           },
           unique: true,
           background: true,
@@ -67,53 +70,44 @@ export class LeaderboardArchiveMongoSource extends CollectionMongoSource<Leaderb
     });
   }
 
-  public async findUser(
-    user: string,
-    sort: string,
-    fromDate?: Date,
-    toDate?: Date
-  ): Promise<LeaderboardDocument> {
-    const { collectionName } = this;
-    const match =
-      fromDate && toDate
-        ? {
-            $and: [
-              { $or: [{ wallet_id: user }, { username: user }] },
-              { start_timestamp: { $gte: fromDate } },
-              { end_timestamp: { $lte: toDate } },
-            ],
-          }
-        : { $or: [{ wallet_id: user }, { username: user }] };
+  public async getSnapshots(wallets: string[]): Promise<LeaderboardDocument[]> {
+    const match = { wallet_id: { $in: wallets } };
 
-    const pipeline = [
-      { $match: match },
-      {
-        $lookup: {
-          from: collectionName,
-          let: { sortBy: '$' + sort },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $gt: ['$' + sort, '$$sortBy'] },
-              },
-            },
-            { $project: { wallet_id: 1 } },
-          ],
-          as: 'higherScores',
-        },
-      },
-      {
-        $addFields: {
-          rank: { $add: [{ $size: '$higherScores' }, 1] },
-        },
-      },
-      {
-        $unset: 'higherScores',
-      },
-    ];
+    const pipeline = [{ $match: match }];
 
     const documents = await this.aggregate({ pipeline });
 
-    return documents[0];
+    return documents;
+  }
+
+  /**
+   * Send updated documents to the data source.
+   *
+   * @async
+   * @param {DocuemntType[]} data
+   * @param {UpdateOptions} params
+   * @returns {UpdateManyResult}
+   * @throws {DataSourceWriteError}
+   */
+  public async updateSnapshots(data: LeaderboardDocument[]): Promise<UpdateManyResult> {
+    try {
+      const operations = data.map(dto => {
+        const { _id, ...dtoWithoutId } = dto as LeaderboardDocument;
+        const { wallet_id } = dtoWithoutId;
+        const filter = { wallet_id };
+        return {
+          updateOne: {
+            filter,
+            update: { $set: dtoWithoutId },
+            upsert: true,
+          },
+        };
+      });
+      const { modifiedCount, upsertedCount, upsertedIds } =
+        await this.collection.bulkWrite(operations);
+      return { modifiedCount, upsertedCount, upsertedIds };
+    } catch (error) {
+      throw DataSourceOperationError.fromError(error);
+    }
   }
 }

@@ -77,7 +77,7 @@ export class UpdateLeaderboardWithinTimeframeUseCase
 
     const wallets = updates.map(update => update.walletId);
 
-    const leaderboardSearch = await repository.findUsers(wallets);
+    const leaderboardSearch = await repository.findUsers(wallets, false);
 
     if (leaderboardSearch.isFailure) {
       return Result.withFailure(

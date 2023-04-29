@@ -5,7 +5,7 @@ import { LeaderboardRepositoryImpl } from './data/repositories/leaderboard.repos
 import { LeaderboardUpdateMongoSource } from './data/data-sources/leaderboard-update.mongo.source';
 import { LeaderboardRedisSource } from './data/data-sources/leaderboard.redis.source';
 import { ExtendedLeaderboardConfig } from '../../config';
-import { LeaderboardMongoSource } from './data/data-sources/leaderboard.mongo.source';
+import { LeaderboardArchiveMongoSource } from './data/data-sources/leaderboard.mongo.source';
 import { DailyLeaderboardRepository } from './domain/repositories/daily-leaderboard.repository';
 import { WeeklyLeaderboardRepository } from './domain/repositories/weekly-leaderboard.repository';
 import { MonthlyLeaderboardRepository } from './domain/repositories/monthly-leaderboard.repository';
@@ -13,6 +13,7 @@ import { CreateUserLeaderboardUseCase } from './domain/use-cases/create-user-lea
 import { UpdateLeaderboardWithinTimeframeUseCase } from './domain/use-cases/update-leaderboard-within-timeframe.use-case';
 import { UpdateLeaderboardUseCase } from './domain/use-cases/update-leaderboard.use-case';
 import { UpdateUserLeaderboardUseCase } from './domain/use-cases/update-user-leaderboard.use-case';
+import { LeaderboardSnapshotMongoSource } from './data/data-sources/leaderboard-snapshot.mongo.source';
 
 export const setupLeaderboard = async (
   config: ExtendedLeaderboardConfig,
@@ -34,19 +35,22 @@ export const setupLeaderboard = async (
   );
 
   const dailyLeaderboardRepository = new LeaderboardRepositoryImpl(
-    new LeaderboardMongoSource(mongoSource, 'daily'),
+    new LeaderboardArchiveMongoSource(mongoSource, 'daily'),
+    new LeaderboardSnapshotMongoSource(mongoSource, 'daily'),
     new LeaderboardRedisSource(redisSource, 'daily'),
     config.archiveBatchSize
   );
 
   const weeklyLeaderboardRepository = new LeaderboardRepositoryImpl(
-    new LeaderboardMongoSource(mongoSource, 'weekly'),
+    new LeaderboardArchiveMongoSource(mongoSource, 'weekly'),
+    new LeaderboardSnapshotMongoSource(mongoSource, 'weekly'),
     new LeaderboardRedisSource(redisSource, 'weekly'),
     config.archiveBatchSize
   );
 
   const monthlyLeaderboardRepository = new LeaderboardRepositoryImpl(
-    new LeaderboardMongoSource(mongoSource, 'monthly'),
+    new LeaderboardArchiveMongoSource(mongoSource, 'monthly'),
+    new LeaderboardSnapshotMongoSource(mongoSource, 'monthly'),
     new LeaderboardRedisSource(redisSource, 'monthly'),
     config.archiveBatchSize
   );

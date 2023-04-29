@@ -74,6 +74,8 @@ export type LeaderboardDocument = LeaderboardNumbers & {
   planets_mined_on?: number;
   unique_tools_used?: number;
   rankings?: LeaderboardNumbers;
+  start_timestamp?: Date;
+  end_timestamp?: Date;
   [key: string]: unknown;
 };
 
