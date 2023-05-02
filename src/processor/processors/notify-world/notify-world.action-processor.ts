@@ -1,4 +1,9 @@
-import { AtomicAssetsService, LeaderboardUpdate, LeaderboardUpdateRepository, NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
+import {
+  AtomicAssetsService,
+  LeaderboardUpdate,
+  LeaderboardUpdateRepository,
+  NotifyWorldContract,
+} from '@alien-worlds/alienworlds-api-common';
 import { log, parseToBigInt } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
@@ -17,6 +22,7 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
       const {
         config: {
           atomicassets: { api: atomicAssetsApiConfig },
+          leaderboard: { tlmDecimalPrecision },
         },
       } = sharedData;
       const { blockNumber, blockTimestamp, name, data } = input;
@@ -30,7 +36,8 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
         const update = LeaderboardUpdate.fromLogmineJson(
           blockNumber,
           blockTimestamp,
-          <NotifyWorldContract.Actions.Types.LogmineStruct>data
+          <NotifyWorldContract.Actions.Types.LogmineStruct>data,
+          tlmDecimalPrecision
         );
 
         const json = update.toJson();
@@ -44,7 +51,9 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
           sharedData.assets.length >= atomicAssetsApiConfig.maxAssetsPerRequest &&
           atomicAssets.isAvailable()
         ) {
-          log(`notify.world:logmine action: Fetching ${sharedData.assets.length} assets...`);
+          log(
+            `notify.world:logmine action: Fetching ${sharedData.assets.length} assets...`
+          );
           atomicAssets.getAssets(sharedData.assets).then(({ failure }) => {
             if (failure) {
               log(failure.error.message);

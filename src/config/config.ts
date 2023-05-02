@@ -12,6 +12,7 @@ export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
 export const buildLeaderboardConfig = (vars: ConfigVars): LeaderboardConfig => ({
   mongo: buildMongoConfig(vars, 'LEADERBOARD_API'),
   redis: buildRedisConfig(vars, 'LEADERBOARD_API'),
+  tlmDecimalPrecision: vars.getNumberEnv('TLM_DECIMAL_PRECISION') || 4,
 });
 
 export const buildAtomicAssetsConfig = (vars: ConfigVars): AtomicAssetsConfig => ({
