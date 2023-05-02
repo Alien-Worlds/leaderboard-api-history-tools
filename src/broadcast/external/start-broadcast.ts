@@ -1,10 +1,9 @@
-import { LeaderboardUpdateMessage } from '@alien-worlds/alienworlds-api-common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Broadcast, BroadcastConfig, log } from '@alien-worlds/api-core';
 import {
   InternalBroadcastChannel,
   InternalBroadcastClientName,
 } from '@alien-worlds/api-history-tools';
-import { ExternalBroadcastChannel } from './external-broadcast.enums';
 
 export const startExternalBroadcast = async (
   externalBroadcastConfig: BroadcastConfig,
@@ -22,18 +21,10 @@ export const startExternalBroadcast = async (
   });
 
   broadcast.onMessage(InternalBroadcastChannel.ExternalBroadcast, async message => {
-    // send message with blockchain data (logmine, settag or addpoints)
-    // to all instances of leaderboard API
-    // server.sendMessageToChannel(
-    //   ExternalBroadcastChannel.LeaderboardUpdate,
-    //   (<LeaderboardUpdateMessage>message.content).data
-    // );
-    console.log('RECEIVED MESSAGE!')
+    //
   });
 
-  // run internal listener (client)
   broadcast.connect();
 
   log(`External broadcast ... [ready]`);
-  // log(`External broadcast ... [skipped]`);
 };

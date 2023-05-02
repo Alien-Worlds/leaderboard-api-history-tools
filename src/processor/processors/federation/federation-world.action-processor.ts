@@ -1,21 +1,15 @@
 import {
   FederationContract,
-  NotifyWorldContract,
+  LeaderboardUpdate,
+  LeaderboardUpdateRepository,
+  UpdateLeaderboardUseCase,
 } from '@alien-worlds/alienworlds-api-common';
-import {
-  ContractAction,
-  ContractUnkownDataEntity,
-  DataSourceOperationError,
-  log,
-} from '@alien-worlds/api-core';
+import { log } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
-import { UpdateLeaderboardUseCase } from '../../leaderboard/domain/use-cases/update-leaderboard.use-case';
-import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
-import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
 
 type ContractData = { [key: string]: unknown };
 

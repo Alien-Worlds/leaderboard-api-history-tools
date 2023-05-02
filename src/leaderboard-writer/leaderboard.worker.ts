@@ -2,11 +2,13 @@
 import { Container, log } from '@alien-worlds/api-core';
 import { Worker } from '@alien-worlds/api-history-tools';
 import { LeaderboardSharedData } from './leaderboard.types';
-import { AtomicAssetsService } from '../processor/atomic-assets/domain/services/atomic-assets.service';
-import { AtomicAsset } from '../processor/atomic-assets/domain/entities/atomic-asset';
-import { LeaderboardUpdateRepository } from '../processor/leaderboard/domain/repositories/leaderboard-update.repository';
-import { UpdateLeaderboardUseCase } from '../processor/leaderboard/domain/use-cases/update-leaderboard.use-case';
-import { MinigToolData } from '../processor/leaderboard/data/leaderboard.dtos';
+import {
+  AtomicAsset,
+  AtomicAssetsService,
+  LeaderboardUpdateRepository,
+  MinigToolData,
+  UpdateLeaderboardUseCase,
+} from '@alien-worlds/alienworlds-api-common';
 
 export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
   protected ioc: Container;
@@ -18,8 +20,13 @@ export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
     this.ioc = ioc;
   }
 
-  public async run(empty: object): Promise<void> {
-    const { ioc } = this;
+  public async run(): Promise<void> {
+    const {
+      ioc,
+      sharedData: {
+        config: { updateBatchSize },
+      },
+    } = this;
     try {
       const updatesRepository = ioc.get<LeaderboardUpdateRepository>(
         LeaderboardUpdateRepository.Token
@@ -48,7 +55,7 @@ export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
           }
 
           totalUpdates = slowline.length + fastline.length;
-          loop = totalUpdates < 1000;
+          loop = totalUpdates < updateBatchSize;
         } else {
           // nothing to update
           log(`[update-leaderboard] no updates...`);

@@ -1,13 +1,15 @@
-import { UsptsWorldsContract } from '@alien-worlds/alienworlds-api-common';
+import {
+  LeaderboardUpdate,
+  LeaderboardUpdateRepository,
+  UpdateLeaderboardUseCase,
+  UsptsWorldsContract,
+} from '@alien-worlds/alienworlds-api-common';
 import { log } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
-import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
-import { UpdateLeaderboardUseCase } from '../../leaderboard/domain/use-cases/update-leaderboard.use-case';
-import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
 
 type ContractData = { [key: string]: unknown };
 

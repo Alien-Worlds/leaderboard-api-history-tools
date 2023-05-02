@@ -1,13 +1,10 @@
-import { NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
+import { AtomicAssetsService, LeaderboardUpdate, LeaderboardUpdateRepository, NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
 import { log, parseToBigInt } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
-import { LeaderboardUpdateRepository } from '../../leaderboard/domain/repositories/leaderboard-update.repository';
-import { LeaderboardUpdate } from '../../leaderboard/domain/entities/leaderboard-update';
-import { AtomicAssetsService } from '../../atomic-assets/domain/services/atomic-assets.service';
 
 type ContractData = { [key: string]: unknown };
 

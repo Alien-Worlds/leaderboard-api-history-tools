@@ -1,13 +1,15 @@
 import { MongoSource, log } from '@alien-worlds/api-core';
 import { WorkerPool } from '@alien-worlds/api-history-tools';
 import { leaderboardWorkerLoaderPath } from './leaderboard.consts';
-import { LeaderboardUpdaterConfig } from './leaderboard.types';
-import { LeaderboardUpdateRepositoryImpl } from '../processor/leaderboard/data/repositories/leaderboard-update.repository-impl';
-import { LeaderboardUpdateMongoSource } from '../processor/leaderboard/data/data-sources/leaderboard-update.mongo.source';
-import { LeaderboardUpdateRepository } from '../processor/leaderboard/domain/repositories/leaderboard-update.repository';
+import { LeaderboardWriterConfig } from './leaderboard.types';
+import {
+  LeaderboardUpdateMongoSource,
+  LeaderboardUpdateRepository,
+  LeaderboardUpdateRepositoryImpl,
+} from '@alien-worlds/alienworlds-api-common';
 
-export class LeaderboardUpdater {
-  public static async create(config: LeaderboardUpdaterConfig) {
+export class LeaderboardWriter {
+  public static async create(config: LeaderboardWriterConfig) {
     const { workers, atomicassets, leaderboard, mongo } = config;
     const workerPool = await WorkerPool.create({
       ...workers,
@@ -19,7 +21,7 @@ export class LeaderboardUpdater {
     const updatesRepository = new LeaderboardUpdateRepositoryImpl(
       leaderboardUpdateMongoSource
     );
-    const runner = new LeaderboardUpdater(workerPool, updatesRepository);
+    const runner = new LeaderboardWriter(workerPool, updatesRepository);
 
     workerPool.onWorkerRelease(() => runner.next());
 
@@ -69,7 +71,7 @@ export class LeaderboardUpdater {
             workerPool.releaseWorker(id);
           });
 
-          worker.run({});
+          worker.run();
         } else {
           this.loop = false;
         }

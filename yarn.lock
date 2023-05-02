@@ -11,20 +11,20 @@
     debug "^4.3.4"
     safe-buffer "~5.1.2"
 
-"@alien-worlds/alienworlds-api-common@^0.0.64":
-  version "0.0.64"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/alienworlds-api-common/0.0.64/8a7adbcd9fd2ad1cdc671cc53a9cce2d1a3b3e9a#8a7adbcd9fd2ad1cdc671cc53a9cce2d1a3b3e9a"
-  integrity sha512-ytSAQ4vn5FBMop3gTHTzAHEt28h7cB8gut8tTbKLEG0erg2w+5l+nhJc4M5FGvKmMVpjVmEAsznAix0FGFMKVg==
+"@alien-worlds/alienworlds-api-common@^0.0.68":
+  version "0.0.68"
+  resolved "https://npm.pkg.github.com/download/@alien-worlds/alienworlds-api-common/0.0.68/86190d857edf0327872b97ca4bb437b566a01f4f#86190d857edf0327872b97ca4bb437b566a01f4f"
+  integrity sha512-iUq9lDPPim4WP5wWEwCFdu4nqtRl7fjWxKu+gDsR+nDe+3/vl/v0NwAUMqrmJbDcPg650RjKMKWzq57QGzPk0A==
   dependencies:
-    "@alien-worlds/api-core" "^0.0.98"
+    "@alien-worlds/api-core" "^0.0.101"
     atomicassets "^1.5.1"
     crypto "^1.0.1"
     eosjs "^22.1.0"
 
-"@alien-worlds/api-core@^0.0.98":
-  version "0.0.98"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-core/0.0.98/8e75dcad7920e7f2d2ddd5f2c206fe8b8714e1c3#8e75dcad7920e7f2d2ddd5f2c206fe8b8714e1c3"
-  integrity sha512-RMeYEpKmEH4YzCR1+4tsk713omjGUbS63fskJAc+qiGzZYsYG2qTM+fkMK4LKplGLkKCvikoiT8+ldVxonEIdA==
+"@alien-worlds/api-core@^0.0.101":
+  version "0.0.101"
+  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-core/0.0.101/c67f2c0741a464be6d0391b98691ca9c2ac74eb9#c67f2c0741a464be6d0391b98691ca9c2ac74eb9"
+  integrity sha512-9hgizhXjYL+PsxsYnrwwL3KRHVvuiVaPjovM2w6U06PTbLXYDkalHQ+em15OQ29DkOd8WGoM1cWW+LTLx6Ec+w==
   dependencies:
     "@google-cloud/bigquery" "^6.0.3"
     amqplib "^0.10.3"
@@ -36,12 +36,12 @@
     redis "^4.6.5"
     reflect-metadata "^0.1.13"
 
-"@alien-worlds/api-history-tools@^0.0.110":
-  version "0.0.110"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-history-tools/0.0.110/a12b282014a4d511d59a429829c2f85b4d62a49d#a12b282014a4d511d59a429829c2f85b4d62a49d"
-  integrity sha512-mV8IlkZBrmWYol+JjmVBggLVGbaFdTu0of3EPIGoVXgHLS2I8BobMmnZepmr/vYQqjkBKBnjKiKlITM2Pj53wA==
+"@alien-worlds/api-history-tools@^0.0.113":
+  version "0.0.113"
+  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-history-tools/0.0.113/4a9b687980dcb7173b053d395e546aec89341e42#4a9b687980dcb7173b053d395e546aec89341e42"
+  integrity sha512-61/zWj+16Ty+dGh7TN5vTMKdEG+yJmRCYlQyHaNxp0sFs6H2Rm6AnnJVp2PLSzYohYFnM/+zWu96XwbWtjLdRQ==
   dependencies:
-    "@alien-worlds/api-core" "^0.0.98"
+    "@alien-worlds/api-core" "^0.0.101"
     "@eosrio/node-abieos" "^1"
     amqplib "^0.10.3"
     async "^3.2.4"

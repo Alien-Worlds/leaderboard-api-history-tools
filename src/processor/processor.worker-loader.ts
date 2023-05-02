@@ -9,8 +9,13 @@ import { ProcessorLabel } from './processor.labels';
 import NotifyWorldActionProcessor from './processors/notify-world/notify-world.action-processor';
 import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
 import FederationActionProcessor from './processors/federation/federation-world.action-processor';
-import { setupLeaderboard } from './leaderboard/ioc.config';
-import { setupAtomicAssets } from './atomic-assets/ioc.config';
+import {
+  LeaderboardUpdateMongoSource,
+  LeaderboardUpdateRepository,
+  LeaderboardUpdateRepositoryImpl,
+  setupAtomicAssets,
+  setupLeaderboard,
+} from '@alien-worlds/alienworlds-api-common';
 
 export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
   private container = new WorkerContainer();
@@ -23,9 +28,20 @@ export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
       config: { mongo, leaderboard, atomicassets },
     } = sharedData;
     this.ioc = new Container();
-    const mongoSource = await MongoSource.create(mongo);
+    const [mongoSource, leaderboardApiMongoSource] = await Promise.all([
+      MongoSource.create(mongo),
+      MongoSource.create(leaderboard.mongo),
+    ]);
+
+    this.ioc
+      .bind<LeaderboardUpdateRepository>(LeaderboardUpdateRepository.Token)
+      .toConstantValue(
+        new LeaderboardUpdateRepositoryImpl(new LeaderboardUpdateMongoSource(mongoSource))
+      );
+
     await setupAtomicAssets(atomicassets, mongoSource, this.ioc);
-    await setupLeaderboard(leaderboard, mongoSource, this.ioc);
+    await setupLeaderboard(leaderboard, leaderboardApiMongoSource, this.ioc);
+
     this.maxAssetsPerRequest = atomicassets.api.maxAssetsPerRequest;
     // 'uspts.worlds'
     this.container.bind(

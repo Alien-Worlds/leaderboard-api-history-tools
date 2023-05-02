@@ -1,11 +1,8 @@
-import { ConfigVars, log } from '@alien-worlds/api-core';
-import cron from 'cron';
-import { buildCronConfig } from '../config';
+import { log } from '@alien-worlds/api-core';
 
 export const start = async () => {
   log(`Cron jobs:`);
-  const vars = new ConfigVars();
-  const cronConfig = buildCronConfig(vars);
+  //
 };
 
 start();
