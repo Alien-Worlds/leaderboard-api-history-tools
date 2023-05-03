@@ -59,6 +59,7 @@ export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
         } else {
           // nothing to update
           log(`[update-leaderboard] no updates...`);
+          this.resolve();
           return;
         }
       }

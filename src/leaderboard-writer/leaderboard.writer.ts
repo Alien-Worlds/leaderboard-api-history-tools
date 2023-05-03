@@ -10,10 +10,10 @@ import {
 
 export class LeaderboardWriter {
   public static async create(config: LeaderboardWriterConfig) {
-    const { workers, atomicassets, leaderboard, mongo } = config;
+    const { workers, atomicassets, leaderboard, mongo, updateBatchSize } = config;
     const workerPool = await WorkerPool.create({
       ...workers,
-      sharedData: { config: { atomicassets, leaderboard, mongo } },
+      sharedData: { config: { atomicassets, leaderboard, mongo, updateBatchSize } },
       workerLoaderPath: leaderboardWorkerLoaderPath,
     });
     const mongoSource = await MongoSource.create(mongo);
