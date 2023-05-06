@@ -1,5 +1,5 @@
 import {
-  AtomicAssetsService,
+  AtomicAssetRepository,
   LeaderboardUpdate,
   LeaderboardUpdateRepository,
   NotifyWorldContract,
@@ -21,8 +21,10 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
       const { input, ioc, sharedData } = this;
       const {
         config: {
-          atomicassets: { api: atomicAssetsApiConfig },
-          leaderboard: { tlmDecimalPrecision },
+          atomicassets: {
+            api: { maxAssetsPerRequest },
+          },
+          leaderboard: { tlmDecimalPrecision, updateBatchSize },
         },
       } = sharedData;
       const { blockNumber, blockTimestamp, name, data } = input;
@@ -30,7 +32,9 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
       const leaderboardUpdates = ioc.get<LeaderboardUpdateRepository>(
         LeaderboardUpdateRepository.Token
       );
-      const atomicAssets = ioc.get<AtomicAssetsService>(AtomicAssetsService.Token);
+      const atomicAssetsRepository = ioc.get<AtomicAssetRepository>(
+        AtomicAssetRepository.Token
+      );
 
       if (name === NotifyWorldActionName.Logmine) {
         const update = LeaderboardUpdate.fromLogmineJson(
@@ -43,37 +47,44 @@ export default class NotifyWorldActionProcessor extends LeaderboardActionTracePr
         const json = update.toJson();
 
         sharedData.updates.push(json);
+
         if (json.bag_items?.length > 0) {
           sharedData.assets.push(...json.bag_items.map(item => parseToBigInt(item)));
         }
 
-        if (
-          sharedData.assets.length >= atomicAssetsApiConfig.maxAssetsPerRequest &&
-          atomicAssets.isAvailable()
-        ) {
-          log(
-            `notify.world:logmine action: Fetching ${sharedData.assets.length} assets...`
+        if (sharedData.assets.length >= maxAssetsPerRequest) {
+          const assets = sharedData.assets.splice(0, maxAssetsPerRequest);
+          log(`notify.world:logmine action: Fetching ${assets.length} assets...`);
+
+          const { failure: getAssetsFailure } = await atomicAssetsRepository.getAssets(
+            assets,
+            true
           );
-          atomicAssets.getAssets(sharedData.assets).then(({ failure }) => {
-            if (failure) {
-              log(failure.error.message);
-              sharedData.assets.unshift(...failure.error.failedFetch);
-            }
-          });
-          sharedData.assets = [];
+
+          if (getAssetsFailure) {
+            const {
+              error: { failedFetch },
+            } = getAssetsFailure;
+            log(`Failed to fetch assets.`, getAssetsFailure.error);
+            sharedData.assets.push(...failedFetch);
+          }
         }
 
-        if (sharedData.updates.length >= 1000) {
-          const updates = sharedData.updates.map(json =>
-            LeaderboardUpdate.fromJson(json)
-          );
-          leaderboardUpdates.add(updates);
+        if (sharedData.updates.length >= updateBatchSize) {
+          const updates = sharedData.updates.splice(0, updateBatchSize);
           sharedData.updates = [];
+          const updateResult = await leaderboardUpdates.add(
+            updates.map(json => LeaderboardUpdate.fromJson(json))
+          );
+
+          if (updateResult.isFailure) {
+            sharedData.updates.push(...updates);
+          }
         }
       }
       this.resolve();
     } catch (error) {
-      log(error);
+      log(`notify.world action processor failure.`);
       this.reject(error);
     }
   }

@@ -13,6 +13,7 @@ export const buildLeaderboardConfig = (vars: ConfigVars): LeaderboardConfig => (
   mongo: buildMongoConfig(vars, 'LEADERBOARD_API'),
   redis: buildRedisConfig(vars, 'LEADERBOARD_API'),
   tlmDecimalPrecision: vars.getNumberEnv('TLM_DECIMAL_PRECISION') || 4,
+  updateBatchSize: vars.getNumberEnv('LEADERBOARD_UPDATE_QUEUE_BATCH_SIZE') || 1000,
 });
 
 export const buildAtomicAssetsConfig = (vars: ConfigVars): AtomicAssetsConfig => ({

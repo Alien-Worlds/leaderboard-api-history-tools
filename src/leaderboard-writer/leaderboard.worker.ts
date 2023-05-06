@@ -4,7 +4,7 @@ import { Worker } from '@alien-worlds/api-history-tools';
 import { LeaderboardSharedData } from './leaderboard.types';
 import {
   AtomicAsset,
-  AtomicAssetsService,
+  AtomicAssetRepository,
   LeaderboardUpdateRepository,
   MinigToolData,
   UpdateLeaderboardUseCase,
@@ -34,12 +34,13 @@ export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
       const updateLeaderboardUseCase = ioc.get<UpdateLeaderboardUseCase>(
         UpdateLeaderboardUseCase.Token
       );
-      const atomicAssetsService = ioc.get<AtomicAssetsService>(AtomicAssetsService.Token);
+      const atomicAssetsRepository = ioc.get<AtomicAssetRepository>(
+        AtomicAssetRepository.Token
+      );
       const fastline = [];
       const slowline = [];
       const failedUpdates = [];
       const ids: bigint[] = [];
-      const assets: AtomicAsset[] = [];
       let loop = true;
       let totalUpdates = 0;
 
@@ -58,81 +59,89 @@ export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
           loop = totalUpdates < updateBatchSize;
         } else {
           // nothing to update
-          log(`[update-leaderboard] no updates...`);
-          this.resolve();
-          return;
+          loop = false;
+          if (totalUpdates === 0) {
+            log(`Worker: ${this.id} [update-leaderboard] no updates...`);
+            this.resolve();
+            return;
+          }
         }
       }
 
       log(
-        `[update-leaderboard] Selected ${totalUpdates} updates, ${
+        `Worker: ${this.id} [update-leaderboard] Selected ${totalUpdates} updates, ${
           slowline.length > 0 ? slowline.length : 'none'
-        } of which require atomic assets.`
+        } of which require atomic assets. Total: ${ids.length} assets`
       );
 
       if (fastline.length > 0) {
-        log(`[update-leaderboard] Starting the fastline update (${fastline.length})...`);
+        log(
+          `Worker: ${this.id} [update-leaderboard] Starting the fastline update (${fastline.length})...`
+        );
         const fastlineUpdate = await updateLeaderboardUseCase.execute(fastline);
 
-        if (fastlineUpdate.isFailure) {
-          failedUpdates.push(...fastline);
-        }
-      }
-
-      if (ids.length > 0) {
-        log(`[update-leaderboard] Getting atomic assets data ...`);
-        const { content, failure } = await atomicAssetsService.getAssets(ids, false);
-
-        if (failure) {
-          log(failure.error.message);
-          // some assets have been downloaded
-          if (failure.error.assets.length > 0) {
-            log(
-              `[update-leaderboard] Some atomic assets have been downloaded, continuing to update ...`
-            );
-            assets.push(...failure.error.assets);
-          } else {
-            log(
-              `[update-leaderboard] None of the atomic assets have been downloaded ...`
-            );
-          }
+        if (fastlineUpdate.failure?.error.failedUpdates.length > 0) {
           log(
-            `[update-leaderboard] Updates with missing data will be queued for a later attempt.`
+            `Worker: ${this.id} [update-leaderboard] fastline update failure.`,
+            fastlineUpdate.failure.error.message
           );
-        } else {
-          assets.push(...content);
+          failedUpdates.push(...fastlineUpdate.failure.error.failedUpdates);
         }
       }
 
-      log(`[update-leaderboard] Starting the update ...`);
-
-      if (assets.length > 0) {
-        // assets downloaded, perform all updates
-        const slowlineUpdate = await updateLeaderboardUseCase.execute(
-          slowline,
-          assets as AtomicAsset<MinigToolData>[]
-        );
-
-        if (slowlineUpdate.isFailure) {
-          failedUpdates.push(...slowline);
-        }
-      } else {
+      if (slowline.length > 0) {
         log(
-          `[update-leaderboard] Operation aborted due to lack of assets or updates ...`
+          `Worker: ${this.id} [update-leaderboard] Getting ${ids.length} atomic assets ...`
         );
+        const assets: AtomicAsset[] = [];
+        const { content, failure: getAssetsFailure } =
+          await atomicAssetsRepository.getAssets(ids, false);
+
+        if (
+          (getAssetsFailure && getAssetsFailure.error.assets.length === 0) ||
+          content?.length === 0
+        ) {
+          log(
+            `Worker: ${this.id} [update-leaderboard] None of the atomic assets have been downloaded ...`
+          );
+          failedUpdates.push(...slowline);
+        } else {
+          if (getAssetsFailure && getAssetsFailure.error.assets.length > 0) {
+            log(
+              `Worker: ${this.id} [update-leaderboard] Some atomic assets have been downloaded, proceeding to update ...`
+            );
+            assets.push(...getAssetsFailure.error.assets);
+          } else {
+            assets.push(...content);
+          }
+
+          const slowlineUpdate = await updateLeaderboardUseCase.execute(
+            slowline,
+            assets as AtomicAsset<MinigToolData>[]
+          );
+
+          if (slowlineUpdate.failure?.error.failedUpdates.length > 0) {
+            log(
+              `Worker: ${this.id} [update-leaderboard] slowline update failure.`,
+              slowlineUpdate.failure.error.message
+            );
+            failedUpdates.push(...slowlineUpdate.failure.error.failedUpdates);
+          }
+        }
       }
 
       if (failedUpdates.length > 0) {
         log(
-          `[update-leaderboard] ${failedUpdates.length} updates out of ${totalUpdates} failed. They will be added to the queue for the next attempt.`
+          `Worker: ${this.id} [update-leaderboard] ${failedUpdates.length} updates out of ${totalUpdates} failed. They will be added to the queue for the next attempt.`
         );
         await updatesRepository.add(failedUpdates);
       } else {
-        log(`[update-leaderboard] Update complete ...`);
+        log(`Worker: ${this.id} [update-leaderboard] Update complete ...`);
       }
 
       this.resolve();
     } catch (error) {
+      log(error);
       this.reject(error);
     }
   }

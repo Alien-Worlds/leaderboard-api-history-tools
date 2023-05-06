@@ -20,7 +20,6 @@ import {
 export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
   private container = new WorkerContainer();
   private ioc: Container;
-  private maxAssetsPerRequest: number;
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
     super.setup(sharedData);
@@ -42,7 +41,6 @@ export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
     await setupAtomicAssets(atomicassets, mongoSource, this.ioc);
     await setupLeaderboard(leaderboard, leaderboardApiMongoSource, this.ioc);
 
-    this.maxAssetsPerRequest = atomicassets.api.maxAssetsPerRequest;
     // 'uspts.worlds'
     this.container.bind(
       ProcessorLabel.UsptsWorldsActionProcessor,
@@ -61,12 +59,11 @@ export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
   }
 
   public async load(pointer: string) {
-    const { ioc, sharedData, maxAssetsPerRequest } = this;
+    const { ioc, sharedData } = this;
     const Class = this.container.get(pointer);
     const worker: Worker = new Class({
       ioc,
       sharedData,
-      maxAssetsPerRequest,
     }) as Worker;
     return worker;
   }
