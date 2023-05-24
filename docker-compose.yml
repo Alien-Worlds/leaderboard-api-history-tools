@@ -21,9 +21,49 @@ services:
     restart: on-failure
     ports:
       - '9001:9001'
-    expose:
-      - 9001
     command: [ 'sh', '-c', 'yarn broadcast:external' ]
+    networks:
+      - common_network
+    volumes:
+      - ./:/var/history-tools
+
+  boot:
+    build:
+      context: .
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: on-failure
+    command: [ 'sh', '-c', 'yarn boot' ]
+    depends_on:
+      - broadcast
+      - db-history
+    networks:
+      - common_network
+    volumes:
+      - ./:/var/history-tools
+
+  reader:
+    build:
+      context: .
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: on-failure
+    command: [ 'sh', '-c', 'yarn reader' ]
+    depends_on:
+      - broadcast
+      - db-history
+    networks:
+      - common_network
+    volumes:
+      - ./:/var/history-tools
+
+  filter:
+    build:
+      context: .
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: on-failure
+    command: [ 'sh', '-c', 'yarn filter' ]
     depends_on:
       - broadcast
       - db-history
@@ -41,55 +81,11 @@ services:
     command: [ 'sh', '-c', 'yarn processor' ]
     depends_on:
       - broadcast
-      - extbroadcast
       - db-history
     networks:
       - common_network
     volumes:
       - ./:/var/history-tools
-
-  block_range:
-    build:
-      context: .
-      args:
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
-    restart: on-failure
-    command: [ 'sh', '-c', 'yarn block-range' ]
-    depends_on:
-      - broadcast
-      - extbroadcast
-      - db-history
-    networks:
-      - common_network
-    volumes:
-      - ./:/var/history-tools
-
-  filler:
-    build:
-      context: .
-      args:
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
-    restart: on-failure
-    command: [ 'sh', '-c', 'yarn filler' ]
-    depends_on:
-      - broadcast
-      - extbroadcast
-      - db-history
-    networks:
-      - common_network
-    volumes:
-      - ./:/var/
-  cron:
-    build:
-      context: .
-      args:
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
-    restart: on-failure
-    command: [ 'sh', '-c', 'yarn cron' ]
-    networks:
-      - common_network
-    volumes:
-      - ./:/var/
 
   db-history:
     image: mongo

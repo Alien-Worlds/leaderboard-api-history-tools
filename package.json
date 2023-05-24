@@ -13,12 +13,14 @@
     "clean": "rm -rf ./build",
     "build": "yarn clean && tsc -b",
     "build:prod": "yarn clean && tsc --project tsconfig.build.json",
-    "broadcast": "node build/internal-broadcast/index.js",
-    "broadcast:external": "node build/external-broadcast/index.js",
+    "broadcast": "node build/broadcast/internal/index.js",
+    "broadcast:external": "node build/broadcast/external/index.js",
     "cron": "node build/cron/index.js",
-    "filler": "node build/filler/index.js",
-    "block-range": "node build/block-range/index.js",
+    "boot": "node build/bootstrap/index.js",
+    "reader": "node build/reader/index.js",
+    "filter": "node build/filter/index.js",
     "processor": "node build/processor/index.js",
+    "leaderboard-writer": "node build/leaderboard-writer/index.js",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "format-check": "prettier --check \"src/\"",
@@ -39,9 +41,9 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
-    "@alien-worlds/alienworlds-api-common": "^0.0.54",
-    "@alien-worlds/api-core": "^0.0.85",
-    "@alien-worlds/api-history-tools": "^0.0.98",
+    "@alien-worlds/alienworlds-api-common": "^0.0.82",
+    "@alien-worlds/api-core": "^0.0.101",
+    "@alien-worlds/api-history-tools": "^0.0.114",
     "@types/cron": "^2.0.1",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/ms": "^0.7.31",
@@ -49,6 +51,7 @@
     "cron": "^2.3.0",
     "jsonwebtoken": "^9.0.0",
     "ms": "^2.1.3",
+    "nanoid": "3",
     "reflect-metadata": "^0.1.13"
   }
 }

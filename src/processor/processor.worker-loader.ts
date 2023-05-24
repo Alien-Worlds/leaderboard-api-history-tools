@@ -1,36 +1,70 @@
-import { UserRepository } from './users/user.repository';
-import { Broadcast, BroadcastClient, MongoSource } from '@alien-worlds/api-core';
-import { DefaultWorkerLoader } from '@alien-worlds/api-history-tools';
-import { AlienWorldsBroadcastClient } from '../internal-broadcast/internal-broadcast.enums';
+import { Container, MongoSource } from '@alien-worlds/api-core';
+import {
+  DefaultWorkerLoader,
+  Worker,
+  WorkerContainer,
+} from '@alien-worlds/api-history-tools';
 import { ProcessorSharedData } from './processor.types';
+import { ProcessorLabel } from './processor.labels';
+import NotifyWorldActionProcessor from './processors/notify-world/notify-world.action-processor';
+import UsptsWorldsActionProcessor from './processors/uspts-worlds/uspts-worlds.action-processor';
+import FederationActionProcessor from './processors/federation/federation-world.action-processor';
+import {
+  LeaderboardUpdateMongoSource,
+  LeaderboardUpdateRepository,
+  LeaderboardUpdateRepositoryImpl,
+  setupAtomicAssets,
+  setupLeaderboard,
+} from '@alien-worlds/alienworlds-api-common';
 
-export default class MyProcessorWorkerLoader extends DefaultWorkerLoader {
-  private mongoSource: MongoSource;
-  private broadcast: BroadcastClient;
-  private users: UserRepository;
+export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
+  private container = new WorkerContainer();
+  private ioc: Container;
 
   public async setup(sharedData: ProcessorSharedData): Promise<void> {
+    super.setup(sharedData);
     const {
-      config: { mongo, broadcast },
+      config: { mongo, leaderboard, atomicassets },
     } = sharedData;
-    this.mongoSource = await MongoSource.create(mongo);
-    this.broadcast = await Broadcast.createClient({
-      ...broadcast,
-      clientName: AlienWorldsBroadcastClient.Processor,
-    });
-    this.users = new UserRepository(this.mongoSource);
+    this.ioc = new Container();
+    const [mongoSource, leaderboardApiMongoSource] = await Promise.all([
+      MongoSource.create(mongo),
+      MongoSource.create(leaderboard.mongo),
+    ]);
 
-    this.broadcast.connect();
+    this.ioc
+      .bind<LeaderboardUpdateRepository>(LeaderboardUpdateRepository.Token)
+      .toConstantValue(
+        new LeaderboardUpdateRepositoryImpl(new LeaderboardUpdateMongoSource(mongoSource))
+      );
+
+    await setupAtomicAssets(atomicassets, mongoSource, this.ioc);
+    await setupLeaderboard(leaderboard, leaderboardApiMongoSource, this.ioc);
+
+    // 'uspts.worlds'
+    this.container.bind(
+      ProcessorLabel.UsptsWorldsActionProcessor,
+      UsptsWorldsActionProcessor
+    );
+    // 'federation'
+    this.container.bind(
+      ProcessorLabel.FederationActionProcessor,
+      FederationActionProcessor
+    );
+    // 'notify.world'
+    this.container.bind(
+      ProcessorLabel.NotifyWorldActionProcessor,
+      NotifyWorldActionProcessor
+    );
   }
 
-  public async load(pointer: string, containerPath: string) {
-    const { mongoSource, broadcast, users } = this;
-    return super.load(
-      pointer,
-      containerPath,
-      mongoSource,
-      broadcast,
-      users
-    );
+  public async load(pointer: string) {
+    const { ioc, sharedData } = this;
+    const Class = this.container.get(pointer);
+    const worker: Worker = new Class({
+      ioc,
+      sharedData,
+    }) as Worker;
+    return worker;
   }
 }

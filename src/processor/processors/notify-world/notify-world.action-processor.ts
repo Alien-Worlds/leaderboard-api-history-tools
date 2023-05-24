@@ -1,88 +1,90 @@
-import { NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
 import {
-  ContractAction,
-  ContractUnkownDataEntity,
-  DataSourceOperationError,
-  log,
-} from '@alien-worlds/api-core';
-import { ProcessorTaskModel } from '@alien-worlds/api-history-tools';
-import { LeaderboardUpdateBroadcastMessage } from '../../../internal-broadcast/internal-broadcast.message';
-import { ProcessorSharedData } from '../../processor.types';
-import { ExtendedActionTraceProcessor } from '../extended-action-trace.processor';
+  AtomicAssetRepository,
+  LeaderboardUpdate,
+  LeaderboardUpdateRepository,
+  NotifyWorldContract,
+} from '@alien-worlds/alienworlds-api-common';
+import { log, parseToBigInt } from '@alien-worlds/api-core';
+import {
+  ActionTraceProcessorInput,
+  ProcessorTaskModel,
+} from '@alien-worlds/api-history-tools';
+import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
 
 type ContractData = { [key: string]: unknown };
 
-export default class NotifyWorldActionProcessor extends ExtendedActionTraceProcessor<ContractData> {
-  public async run(
-    model: ProcessorTaskModel,
-    sharedData: ProcessorSharedData
-  ): Promise<void> {
+export default class NotifyWorldActionProcessor extends LeaderboardActionTraceProcessor<ContractData> {
+  public async run(model: ProcessorTaskModel): Promise<void> {
     try {
-      await super.run(model, sharedData);
-      const { Ioc, NotifyWorldActionName, Entities } = NotifyWorldContract.Actions;
-      const { input, mongoSource, broadcast } = this;
+      this.input = ActionTraceProcessorInput.create(model);
+      const { NotifyWorldActionName } = NotifyWorldContract.Actions;
+      const { input, ioc, sharedData } = this;
       const {
-        blockNumber,
-        blockTimestamp,
-        account,
-        name,
-        recvSequence,
-        globalSequence,
-        transactionId,
-        data,
-      } = input;
-      const contractModel = {
-        blockNumber,
-        blockTimestamp,
-        account,
-        name,
-        receiverSequence: recvSequence,
-        globalSequence,
-        transactionId,
-        data: null,
-      };
+        config: {
+          atomicassets: {
+            api: { maxAssetsPerRequest },
+          },
+          leaderboard: { tlmDecimalPrecision, updateBatchSize },
+        },
+      } = sharedData;
+      const { blockNumber, blockTimestamp, name, data } = input;
 
-      const repository = await Ioc.setupNotifyWorldActionRepository(mongoSource);
+      const leaderboardUpdates = ioc.get<LeaderboardUpdateRepository>(
+        LeaderboardUpdateRepository.Token
+      );
+      const atomicAssetsRepository = ioc.get<AtomicAssetRepository>(
+        AtomicAssetRepository.Token
+      );
+
       if (name === NotifyWorldActionName.Logmine) {
-        const logmineStruct = <NotifyWorldContract.Actions.Types.LogmineStruct>data;
-        contractModel.data = Entities.LogMine.fromStruct(logmineStruct);
-        //
-        // broadcast.sendMessage(
-        //   LeaderboardUpdateBroadcastMessage.create(
-        //     contractModel.blockNumber,
-        //     contractModel.blockTimestamp,
-        //     null,
-        //     logmineStruct
-        //   )
-        // );
-        sharedData.leaderboard.push(logmineStruct);
-        this.sendLeaderboard(blockNumber, blockTimestamp, sharedData);
-      } else {
-        /*
-        In the case of an action (test or former etc.) that is not included in the current ABI and 
-        for which we do not have defined types, we must save the object in its primary form.
-        */
-        contractModel.data = ContractUnkownDataEntity.create(data);
-      }
+        const update = LeaderboardUpdate.fromLogmineJson(
+          blockNumber,
+          blockTimestamp,
+          <NotifyWorldContract.Actions.Types.LogmineStruct>data,
+          tlmDecimalPrecision
+        );
 
-      const result = await repository.add(ContractAction.create(contractModel));
+        const json = update.toJson();
 
-      if (result.isFailure) {
-        const {
-          failure: { error },
-        } = result;
-        if ((<DataSourceOperationError>error).isDuplicateError) {
-          log(`Resolving a task containing duplicate documents: ${error.message}`);
-          this.resolve(contractModel);
-        } else {
-          log(error);
-          this.reject(error);
+        sharedData.updates.push(json);
+
+        if (json.bag_items?.length > 0) {
+          sharedData.assets.push(...json.bag_items.map(item => parseToBigInt(item)));
         }
-      } else {
-        this.resolve(result.content);
+
+        if (sharedData.assets.length >= maxAssetsPerRequest) {
+          const assets = sharedData.assets.splice(0, maxAssetsPerRequest);
+          log(`notify.world:logmine action: Fetching ${assets.length} assets...`);
+
+          const { failure: getAssetsFailure } = await atomicAssetsRepository.getAssets(
+            assets,
+            true
+          );
+
+          if (getAssetsFailure) {
+            const {
+              error: { failedFetch },
+            } = getAssetsFailure;
+            log(`Failed to fetch assets.`, getAssetsFailure.error);
+            sharedData.assets.push(...failedFetch);
+          }
+        }
+
+        if (sharedData.updates.length >= updateBatchSize) {
+          const updates = sharedData.updates.splice(0, updateBatchSize);
+          sharedData.updates = [];
+          const updateResult = await leaderboardUpdates.add(
+            updates.map(json => LeaderboardUpdate.fromJson(json))
+          );
+
+          if (updateResult.isFailure) {
+            sharedData.updates.push(...updates);
+          }
+        }
       }
+      this.resolve();
     } catch (error) {
-      log(error);
+      log(`notify.world action processor failure.`);
       this.reject(error);
     }
   }
