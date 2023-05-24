@@ -36,10 +36,10 @@
     redis "^4.6.5"
     reflect-metadata "^0.1.13"
 
-"@alien-worlds/api-history-tools@^0.0.113":
-  version "0.0.113"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-history-tools/0.0.113/4a9b687980dcb7173b053d395e546aec89341e42#4a9b687980dcb7173b053d395e546aec89341e42"
-  integrity sha512-61/zWj+16Ty+dGh7TN5vTMKdEG+yJmRCYlQyHaNxp0sFs6H2Rm6AnnJVp2PLSzYohYFnM/+zWu96XwbWtjLdRQ==
+"@alien-worlds/api-history-tools@^0.0.114":
+  version "0.0.114"
+  resolved "https://npm.pkg.github.com/download/@alien-worlds/api-history-tools/0.0.114/91a735bd95320f734d0a89b42da97d7ecdbaa69e#91a735bd95320f734d0a89b42da97d7ecdbaa69e"
+  integrity sha512-1rSmA19sNxD6BC2hl7O0FiQgsHnfhXNUnZUtkfgYWsmrDtxMw5CFqc42ke0h8//GSq+hCZMRFbXUtP+rZH25Hw==
   dependencies:
     "@alien-worlds/api-core" "^0.0.101"
     "@eosrio/node-abieos" "^1"
