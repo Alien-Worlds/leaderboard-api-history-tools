@@ -1,9 +1,11 @@
 import {
   AtomicAssetRepository,
-  LeaderboardUpdate,
-  LeaderboardUpdateRepository,
   NotifyWorldContract,
 } from '@alien-worlds/alienworlds-api-common';
+import {
+  LeaderboardUpdate,
+  LeaderboardUpdateRepository,
+} from '@alien-worlds/leaderboard-api-common';
 import { log, parseToBigInt } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
