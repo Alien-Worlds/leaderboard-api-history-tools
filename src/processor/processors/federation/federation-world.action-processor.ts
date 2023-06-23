@@ -1,15 +1,11 @@
-import {
-  FederationContract,
-  LeaderboardUpdate,
-  LeaderboardUpdateRepository,
-  UpdateLeaderboardUseCase,
-} from '@alien-worlds/alienworlds-api-common';
+import { FederationContract } from '@alien-worlds/alienworlds-api-common';
 import { log } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
+import { LeaderboardUpdate, LeaderboardUpdateRepository, UpdateLeaderboardUseCase } from '@alien-worlds/leaderboard-api-common';
 
 type ContractData = { [key: string]: unknown };
 

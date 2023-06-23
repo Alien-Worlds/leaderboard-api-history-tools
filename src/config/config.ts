@@ -1,9 +1,7 @@
 import { ConfigVars, buildMongoConfig, buildRedisConfig } from '@alien-worlds/api-core';
 import { CronConfig } from './config.types';
-import {
-  AtomicAssetsConfig,
-  LeaderboardConfig,
-} from '@alien-worlds/alienworlds-api-common';
+import { LeaderboardConfig } from '@alien-worlds/leaderboard-api-common';
+import { AtomicAssetsConfig } from '@alien-worlds/atomicassets-api-common';
 
 export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
   //

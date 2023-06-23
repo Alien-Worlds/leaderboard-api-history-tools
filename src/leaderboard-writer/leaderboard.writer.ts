@@ -6,7 +6,7 @@ import {
   LeaderboardUpdateMongoSource,
   LeaderboardUpdateRepository,
   LeaderboardUpdateRepositoryImpl,
-} from '@alien-worlds/alienworlds-api-common';
+} from '@alien-worlds/leaderboard-api-common';
 
 export class LeaderboardWriter {
   public static async create(config: LeaderboardWriterConfig) {

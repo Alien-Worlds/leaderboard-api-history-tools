@@ -13,9 +13,9 @@ import {
   LeaderboardUpdateMongoSource,
   LeaderboardUpdateRepository,
   LeaderboardUpdateRepositoryImpl,
-  setupAtomicAssets,
   setupLeaderboard,
-} from '@alien-worlds/alienworlds-api-common';
+} from '@alien-worlds/leaderboard-api-common';
+import { setupAtomicAssets } from '@alien-worlds/atomicassets-api-common';
 
 export default class ProcessorWorkerLoader extends DefaultWorkerLoader {
   private container = new WorkerContainer();

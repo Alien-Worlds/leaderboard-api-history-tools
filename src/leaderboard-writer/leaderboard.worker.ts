@@ -3,12 +3,14 @@ import { Container, log } from '@alien-worlds/api-core';
 import { Worker } from '@alien-worlds/api-history-tools';
 import { LeaderboardSharedData } from './leaderboard.types';
 import {
-  AtomicAsset,
-  AtomicAssetRepository,
   LeaderboardUpdateRepository,
   MinigToolData,
   UpdateLeaderboardUseCase,
-} from '@alien-worlds/alienworlds-api-common';
+} from '@alien-worlds/leaderboard-api-common';
+import {
+  AtomicAsset,
+  AtomicAssetRepository,
+} from '@alien-worlds/atomicassets-api-common';
 
 export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
   protected ioc: Container;
