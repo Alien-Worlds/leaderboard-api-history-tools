@@ -1,15 +1,15 @@
+import { NotifyWorldContract } from '@alien-worlds/alienworlds-api-common';
 import {
-  AtomicAssetRepository,
   LeaderboardUpdate,
   LeaderboardUpdateRepository,
-  NotifyWorldContract,
-} from '@alien-worlds/alienworlds-api-common';
+} from '@alien-worlds/leaderboard-api-common';
 import { log, parseToBigInt } from '@alien-worlds/api-core';
 import {
   ActionTraceProcessorInput,
   ProcessorTaskModel,
 } from '@alien-worlds/api-history-tools';
 import { LeaderboardActionTraceProcessor } from '../leaderboard-action-trace.processor';
+import { AtomicAssetRepository } from '@alien-worlds/atomicassets-api-common';
 
 type ContractData = { [key: string]: unknown };
 

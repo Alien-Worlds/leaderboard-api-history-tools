@@ -2,13 +2,8 @@ import { Container, MongoSource } from '@alien-worlds/api-core';
 import { DefaultWorkerLoader, Worker } from '@alien-worlds/api-history-tools';
 import { LeaderboardSharedData } from './leaderboard.types';
 import LeaderboardWorker from './leaderboard.worker';
-import {
-  LeaderboardUpdateMongoSource,
-  LeaderboardUpdateRepository,
-  LeaderboardUpdateRepositoryImpl,
-  setupAtomicAssets,
-  setupLeaderboard,
-} from '@alien-worlds/alienworlds-api-common';
+import { LeaderboardUpdateMongoSource, LeaderboardUpdateRepository, LeaderboardUpdateRepositoryImpl, setupLeaderboard } from '@alien-worlds/leaderboard-api-common';
+import { setupAtomicAssets } from '@alien-worlds/atomicassets-api-common';
 
 export default class LeaderboardWorkerLoader extends DefaultWorkerLoader<LeaderboardSharedData> {
   private ioc: Container;
