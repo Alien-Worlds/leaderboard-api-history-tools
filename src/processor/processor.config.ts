@@ -1,38 +1,31 @@
-import {
-  ConfigVars,
-  buildBroadcastConfig,
-  buildMongoConfig,
-} from '@alien-worlds/api-core';
+import { buildAtomicAssetsConfig, buildLeaderboardConfig } from '../config';
 import {
   ProcessorCommandOptions,
   ProcessorConfig,
+  ConfigVars,
   buildProcessorConfig,
-} from '@alien-worlds/api-history-tools';
-import featured from '../featured';
-import { buildAtomicAssetsConfig, buildLeaderboardConfig } from '../config';
+  ProcessorDependencies,
+} from '@alien-worlds/aw-history-starter-kit';
 
 export const buildLeaderboardProcessorConfig = (
+  dependencies: ProcessorDependencies,
   options: ProcessorCommandOptions
 ): ProcessorConfig => {
   const vars = new ConfigVars();
-  const mongo = buildMongoConfig(vars);
-  const processorConfig = buildProcessorConfig(vars, featured, options);
+  const config = buildProcessorConfig(vars, dependencies.databaseConfigBuilder, options);
+
   const leaderboard = buildLeaderboardConfig(vars);
   const atomicassets = buildAtomicAssetsConfig(vars);
-  const broadcast = buildBroadcastConfig(vars);
+  // const broadcast = buildBroadcastConfig(vars);
 
-  processorConfig.workers.sharedData = {
+  config.workers.sharedData = {
     config: {
-      mongo,
       leaderboard,
       atomicassets,
-      broadcast,
     },
     updates: [],
     assets: [],
   };
 
-  processorConfig.processorLoaderPath = `${__dirname}/processor.worker-loader`;
-
-  return processorConfig;
+  return config;
 };

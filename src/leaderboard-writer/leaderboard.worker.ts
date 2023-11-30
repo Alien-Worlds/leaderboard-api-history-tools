@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Container, log } from '@alien-worlds/api-core';
-import { Worker } from '@alien-worlds/api-history-tools';
-import { LeaderboardSharedData } from './leaderboard.types';
+
+import {
+  AtomicAssetRepository,
+  AtomicAsset,
+} from '@alien-worlds/aw-api-common-atomicassets';
 import {
   LeaderboardUpdateRepository,
-  MinigToolData,
   UpdateLeaderboardUseCase,
-} from '@alien-worlds/leaderboard-api-common';
-import {
-  AtomicAsset,
-  AtomicAssetRepository,
-} from '@alien-worlds/atomicassets-api-common';
+  MinigToolData,
+} from '@alien-worlds/aw-api-common-leaderboard';
+import { Container, log, Worker } from '@alien-worlds/aw-history-starter-kit';
+import { LeaderboardSharedData } from './leaderboard.types';
 
 export default class LeaderboardWorker extends Worker<LeaderboardSharedData> {
   protected ioc: Container;

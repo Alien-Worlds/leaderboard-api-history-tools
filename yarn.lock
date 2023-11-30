@@ -2,15 +2,6 @@
 # yarn lockfile v1
 
 
-"@alien-worlds/aw-antelope@^0.0.38":
-  version "0.0.38"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-antelope/0.0.38/ac9001748325d674d59fbe796540bac47b311c17#ac9001748325d674d59fbe796540bac47b311c17"
-  integrity sha512-GSkxuhtSCDO/4WmszVjkQUnJsaiEWzSsyI29Z/jfL1JK7WfUKLzE/p5l9HaHj26yOfCmz/ooyj6UKIPGuRI1cw==
-  dependencies:
-    "@alien-worlds/aw-core" "^0.0.13"
-    "@alien-worlds/aw-storage-mongodb" "^0.0.7"
-    eosjs "^22.1.0"
-
 "@alien-worlds/aw-antelope@^0.0.45":
   version "0.0.45"
   resolved "https://registry.yarnpkg.com/@alien-worlds/aw-antelope/-/aw-antelope-0.0.45.tgz#8cd06e67536c20ed59d89ea968bac3cb36150b85"
@@ -24,6 +15,17 @@
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@alien-worlds/aw-api-common-atomicassets/-/aw-api-common-atomicassets-0.0.7.tgz#8431b94cb74d5e1c173de4cac6d61222a3956190"
   integrity sha512-d8SrZIA4h+YNV0WpIYUXdih8RMeH6Kdrbt+zHFCWv5+h47pkkK+eaDytJ3pk2oU+r7XT7y0UIcn9VMyGGvKvRQ==
+  dependencies:
+    "@alien-worlds/aw-core" "^0.0.21"
+    "@alien-worlds/aw-storage-mongodb" "^0.0.16"
+    atomicassets "^1.5.1"
+    crypto "^1.0.1"
+    eosjs "^22.1.0"
+
+"@alien-worlds/aw-api-common-atomicassets@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@alien-worlds/aw-api-common-atomicassets/-/aw-api-common-atomicassets-0.0.8.tgz#a08aa1a46bb6969e2a9d6dcdb1dec985ef71222a"
+  integrity sha512-XQW7J6cTtwrjpom6QwdJexDEMSm63TA4qZC9PwLkCA59yAjTJu7Y9yZUibVcOOfrAJoNYAS4n+dvtLfmlX8v6A==
   dependencies:
     "@alien-worlds/aw-core" "^0.0.21"
     "@alien-worlds/aw-storage-mongodb" "^0.0.16"
@@ -46,12 +48,12 @@
     eosjs "^22.1.0"
     nanoid "3"
 
-"@alien-worlds/aw-broadcast@^0.0.6":
-  version "0.0.6"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-broadcast/0.0.6/361699552df577c674cfd07d55a89173a8ec69a1#361699552df577c674cfd07d55a89173a8ec69a1"
-  integrity sha512-n08okhDoxCr1urpCpKXlXXUcqz2MO7ifjz4jGkgwJgjycJvgi8qm5O5t6HVRjv9MYV3OSJSjAoYls8Q6sPFdHQ==
+"@alien-worlds/aw-broadcast@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@alien-worlds/aw-broadcast/-/aw-broadcast-0.0.12.tgz#a9bcf9d54fa0f897bf50929ee2e6472337533808"
+  integrity sha512-I+ZnJO6x7aaV4txIrCmpgzwK8h3VgOfLhWGXoAZu1nCmJXb6c8eBsmajlybSak0aHs7+Y3R/kX69p0FTKFoyRg==
   dependencies:
-    "@alien-worlds/aw-core" "^0.0.13"
+    "@alien-worlds/aw-core" "^0.0.21"
     nanoid "^3.0.0"
 
 "@alien-worlds/aw-contract-notify-world@^0.0.1":
@@ -60,15 +62,6 @@
   integrity sha512-uVwl/IK7kfwzMX2R3LF8V65w7ZxxdeCJRyWcIlyapJ9HqBcEckm/w4VnMo0E8WgQlSP0ollHmvZDp179yLAMLw==
   dependencies:
     "@alien-worlds/aw-antelope" "^0.0.45"
-
-"@alien-worlds/aw-core@^0.0.13":
-  version "0.0.13"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-core/0.0.13/f9d8ad2b2db4b99c52da69c075a4c34950602e73#f9d8ad2b2db4b99c52da69c075a4c34950602e73"
-  integrity sha512-v82R+oqik+3IaXH9KllFQGOfkP9P6C97zTt++TleWlB1V7wQdQdFtItgN/0eEo+VdHjdmUryLUEkQM4WNn1kyw==
-  dependencies:
-    inversify "^6.0.1"
-    node-fetch "2.6.6"
-    reflect-metadata "^0.1.13"
 
 "@alien-worlds/aw-core@^0.0.21":
   version "0.0.21"
@@ -79,24 +72,23 @@
     node-fetch "2.6.6"
     reflect-metadata "^0.1.13"
 
-"@alien-worlds/aw-history-starter-kit@^0.0.7":
-  version "0.0.7"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-history-starter-kit/0.0.7/d82e372f964146f7c3938101334606c3f0785c65#d82e372f964146f7c3938101334606c3f0785c65"
-  integrity sha512-1C94/6hLalVE1Y4L4f23Y84/o41lpyP9vMK2rRzCyy4xz9yAsDODjoucCBbLy9m95d3utgerSHO1WYkxgEoagQ==
+"@alien-worlds/aw-history-starter-kit@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@alien-worlds/aw-history-starter-kit/-/aw-history-starter-kit-0.0.10.tgz#04e969a47378d00825723b5cb5db141b9fb0bd88"
+  integrity sha512-CMbuUf3iAdMNHzL1poXV7cu17B77O36YD73ZQKorqo3LUpjfS3lzf6PYuwWvfdoLEp8cWjcgv3Y+ctepCgygUQ==
   dependencies:
-    "@alien-worlds/aw-antelope" "^0.0.38"
-    "@alien-worlds/aw-history" "^0.0.8"
-    "@alien-worlds/aw-storage-mongodb" "^0.0.7"
+    "@alien-worlds/aw-antelope" "^0.0.45"
+    "@alien-worlds/aw-history" "^0.0.12"
     express "^4.18.2"
 
-"@alien-worlds/aw-history@^0.0.8":
-  version "0.0.8"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-history/0.0.8/de3c5ea0d432db62c9abe46d137f6f4d1d015c41#de3c5ea0d432db62c9abe46d137f6f4d1d015c41"
-  integrity sha512-4wtORseM50qYzI9JeIHR2Teus5qBjrOPFelfL1RYd68pMLR/aRBNP4svogE8tjRvoS2y/cv5j/AWEC9fpwwkzg==
+"@alien-worlds/aw-history@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@alien-worlds/aw-history/-/aw-history-0.0.12.tgz#ab8a992a1838fab74c782741031a7b7fa8050331"
+  integrity sha512-I+wasxN3t8+/zdJVs0dIAIBZStzRlw+zIf6yUSebK10o+vIB+xXDgoYZsaJBfkSdSLKlqennN3MucXoxQ093Bw==
   dependencies:
-    "@alien-worlds/aw-broadcast" "^0.0.6"
-    "@alien-worlds/aw-core" "^0.0.13"
-    "@alien-worlds/aw-workers" "^0.0.2"
+    "@alien-worlds/aw-broadcast" "^0.0.12"
+    "@alien-worlds/aw-core" "^0.0.21"
+    "@alien-worlds/aw-workers" "^0.0.5"
     async "^3.2.4"
     commander "^10.0.1"
     crypto "^1.0.1"
@@ -110,14 +102,6 @@
     "@alien-worlds/aw-core" "^0.0.21"
     mongodb "4.9.1"
 
-"@alien-worlds/aw-storage-mongodb@^0.0.7":
-  version "0.0.7"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-storage-mongodb/0.0.7/37558013f4dd4f7f5d345549f7f5e86ae1651f73#37558013f4dd4f7f5d345549f7f5e86ae1651f73"
-  integrity sha512-EWSmI/L1wnYcmAi17D4q375t/ykLee5XSNrp/GJgo+/j9bmkEAhVFyFiJ4lNHq3+Hk+OrJbxlVBgJqmeaagZUw==
-  dependencies:
-    "@alien-worlds/aw-core" "^0.0.13"
-    mongodb "4.9.1"
-
 "@alien-worlds/aw-storage-redis@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@alien-worlds/aw-storage-redis/-/aw-storage-redis-0.0.7.tgz#cddfe3c340683fb0bfe3131a52efeabb7d0cf514"
@@ -126,10 +110,10 @@
     "@alien-worlds/aw-core" "^0.0.21"
     redis "^4.6.7"
 
-"@alien-worlds/aw-workers@^0.0.2":
-  version "0.0.2"
-  resolved "https://npm.pkg.github.com/download/@alien-worlds/aw-workers/0.0.2/38b0f98ca4327d71df0e5b21a59b7a13b760a654#38b0f98ca4327d71df0e5b21a59b7a13b760a654"
-  integrity sha512-Sdm5OI7lTJbBXXxXh3bGsc2fB/I6v55hZKFY8omPIi68M+P9xlfqJDU8AoZ+zfb4G9iH60Mn6kiLLNe0yKqeBQ==
+"@alien-worlds/aw-workers@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@alien-worlds/aw-workers/-/aw-workers-0.0.5.tgz#4d89e17d666e4a925c3f32728cf6dec16e74ff59"
+  integrity sha512-7th9biXDopccNKep5CJbEeSDtxQGDUBOROUZIj/GSIhY/XzKCGPOGFuLgn+N/ZoHjoQizdsSvphdXehvZrrmEw==
   dependencies:
     async "^3.2.4"
     ts-node "^10.9.1"

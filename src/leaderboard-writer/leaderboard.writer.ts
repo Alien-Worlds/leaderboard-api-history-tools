@@ -1,12 +1,14 @@
-import { MongoSource, log } from '@alien-worlds/api-core';
-import { WorkerPool } from '@alien-worlds/api-history-tools';
-import { leaderboardWorkerLoaderPath } from './leaderboard.consts';
-import { LeaderboardWriterConfig } from './leaderboard.types';
 import {
   LeaderboardUpdateMongoSource,
-  LeaderboardUpdateRepository,
   LeaderboardUpdateRepositoryImpl,
-} from '@alien-worlds/leaderboard-api-common';
+  LeaderboardUpdateRepository,
+} from '@alien-worlds/aw-api-common-leaderboard';
+import { WorkerPool, MongoSource, log } from '@alien-worlds/aw-history-starter-kit';
+import {
+  leaderboardWorkerLoaderPath,
+  leaderboardWorkerLoaderDependenciesPath,
+} from './leaderboard.consts';
+import { LeaderboardWriterConfig } from './leaderboard.types';
 
 export class LeaderboardWriter {
   public static async create(config: LeaderboardWriterConfig) {
@@ -15,6 +17,7 @@ export class LeaderboardWriter {
       ...workers,
       sharedData: { config: { atomicassets, leaderboard, mongo, updateBatchSize } },
       workerLoaderPath: leaderboardWorkerLoaderPath,
+      workerLoaderDependenciesPath: leaderboardWorkerLoaderDependenciesPath,
     });
     const mongoSource = await MongoSource.create(mongo);
     const leaderboardUpdateMongoSource = new LeaderboardUpdateMongoSource(mongoSource);

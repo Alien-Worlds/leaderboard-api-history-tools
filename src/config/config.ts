@@ -1,7 +1,10 @@
-import { ConfigVars, buildMongoConfig, buildRedisConfig } from '@alien-worlds/api-core';
+
+import { AtomicAssetsConfig } from '@alien-worlds/aw-api-common-atomicassets';
+import { LeaderboardConfig } from '@alien-worlds/aw-api-common-leaderboard';
+import { ConfigVars, buildMongoConfig } from '@alien-worlds/aw-history-starter-kit';
 import { CronConfig } from './config.types';
-import { LeaderboardConfig } from '@alien-worlds/leaderboard-api-common';
-import { AtomicAssetsConfig } from '@alien-worlds/atomicassets-api-common';
+import { buildRedisConfig } from '@alien-worlds/aw-storage-redis';
+
 
 export const buildCronConfig = (vars: ConfigVars): CronConfig => ({
   //

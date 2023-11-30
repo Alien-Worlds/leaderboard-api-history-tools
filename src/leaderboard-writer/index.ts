@@ -1,8 +1,9 @@
-import { log } from '@alien-worlds/api-core';
+
 import { Command } from 'commander';
 import { buildLeaderboardWriterConfig } from './leaderboard.config';
 import { LeaderboardWriterCommandOptions } from './leaderboard.types';
 import { startLeaderboardWriter } from './start-leaderboard-writer';
+import { log } from '@alien-worlds/aw-history-starter-kit';
 
 const program = new Command();
 

@@ -1,21 +1,25 @@
-import { log } from '@alien-worlds/api-core';
 import {
+  process as processorBoot,
+  DefaultProcessorDependencies,
   ProcessorCommandOptions,
-  startProcessor,
-} from '@alien-worlds/api-history-tools';
-import { Command } from 'commander';
+  ProcessorDependencies,
+  log,
+  processorCommand,
+} from '@alien-worlds/aw-history-starter-kit';
+import path from 'path';
 import { buildLeaderboardProcessorConfig } from './processor.config';
 
-const program = new Command();
+export const startProcessor = (args: string[]) => {
+  const dependencies: ProcessorDependencies = new DefaultProcessorDependencies();
+  const options = processorCommand.parse(args).opts<ProcessorCommandOptions>();
+  const config = buildLeaderboardProcessorConfig(dependencies, options);
 
-const start = async (options: ProcessorCommandOptions) => {
-  const config = buildLeaderboardProcessorConfig(options);
-  startProcessor(config).catch(log);
+  processorBoot(
+    config,
+    dependencies,
+    path.join(`${__dirname}/`, './processors'),
+    path.join(__dirname, '../../leaderboard.featured.json')
+  ).catch(log);
 };
 
-program
-  .version('1.0', '-v, --version')
-  .option('-t, --threads <threads>', 'Number of threads')
-  .parse(process.argv);
-
-start(program.opts<ProcessorCommandOptions>()).catch(log);
+startProcessor(process.argv);

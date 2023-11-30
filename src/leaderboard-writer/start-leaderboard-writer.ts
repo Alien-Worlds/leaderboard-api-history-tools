@@ -1,6 +1,6 @@
-import { log } from '@alien-worlds/api-core';
 import { LeaderboardWriter } from './leaderboard.writer';
 import { LeaderboardWriterConfig } from './leaderboard.types';
+import { log } from '@alien-worlds/aw-history-starter-kit';
 
 /**
  *

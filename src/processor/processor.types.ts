@@ -1,9 +1,9 @@
-import { BroadcastConfig, MongoConfig } from '@alien-worlds/api-core';
-import { AtomicAssetsConfig } from '@alien-worlds/atomicassets-api-common';
+import { AtomicAssetsConfig } from '@alien-worlds/aw-api-common-atomicassets';
 import {
   LeaderboardConfig,
   LeaderboardUpdateJson,
-} from '@alien-worlds/leaderboard-api-common';
+} from '@alien-worlds/aw-api-common-leaderboard';
+import { BroadcastConfig, MongoConfig } from '@alien-worlds/aw-history-starter-kit';
 
 export type ProcessorSharedData = {
   config: {

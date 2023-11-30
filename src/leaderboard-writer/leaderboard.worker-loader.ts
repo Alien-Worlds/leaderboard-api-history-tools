@@ -1,41 +1,23 @@
-import { Container, MongoSource } from '@alien-worlds/api-core';
-import { DefaultWorkerLoader, Worker } from '@alien-worlds/api-history-tools';
+import { DefaultWorkerLoader } from '@alien-worlds/aw-history-starter-kit';
 import { LeaderboardSharedData } from './leaderboard.types';
 import LeaderboardWorker from './leaderboard.worker';
-import { LeaderboardUpdateMongoSource, LeaderboardUpdateRepository, LeaderboardUpdateRepositoryImpl, setupLeaderboard } from '@alien-worlds/leaderboard-api-common';
-import { setupAtomicAssets } from '@alien-worlds/atomicassets-api-common';
+import LeaderboardWorkerLoaderDependencies from './leaderboard.worker-loader.dependencies';
 
-export default class LeaderboardWorkerLoader extends DefaultWorkerLoader<LeaderboardSharedData> {
-  private ioc: Container;
-
+export default class LeaderboardWorkerLoader extends DefaultWorkerLoader<
+  LeaderboardSharedData,
+  LeaderboardWorkerLoaderDependencies
+> {
   public async setup(sharedData: LeaderboardSharedData): Promise<void> {
-    super.setup(sharedData);
-    const {
-      config: { mongo, leaderboard, atomicassets },
-    } = sharedData;
-    this.ioc = new Container();
-    const [mongoSource, leaderboardApiMongoSource] = await Promise.all([
-      MongoSource.create(mongo),
-      MongoSource.create(leaderboard.mongo),
-    ]);
-
-    this.ioc
-      .bind<LeaderboardUpdateRepository>(LeaderboardUpdateRepository.Token)
-      .toConstantValue(
-        new LeaderboardUpdateRepositoryImpl(new LeaderboardUpdateMongoSource(mongoSource))
-      );
-
-    await setupAtomicAssets(atomicassets, mongoSource, this.ioc);
-    await setupLeaderboard(leaderboard, leaderboardApiMongoSource, this.ioc);
+    const { config } = sharedData;
+    await super.setup(sharedData, config);
   }
 
   public async load() {
-    const { ioc, sharedData } = this;
-
-    const worker = new LeaderboardWorker({
-      ioc,
+    const {
+      dependencies: { ioc },
       sharedData,
-    }) as Worker;
-    return worker;
+    } = this;
+
+    return new LeaderboardWorker({ ioc, sharedData });
   }
 }

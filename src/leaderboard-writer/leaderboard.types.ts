@@ -1,7 +1,6 @@
-import { MongoConfig } from '@alien-worlds/api-core';
-import { WorkersConfig } from '@alien-worlds/api-history-tools';
-import { AtomicAssetsConfig } from '@alien-worlds/atomicassets-api-common';
-import { LeaderboardConfig } from '@alien-worlds/leaderboard-api-common';
+import { AtomicAssetsConfig } from "@alien-worlds/aw-api-common-atomicassets";
+import { LeaderboardConfig } from "@alien-worlds/aw-api-common-leaderboard";
+import { MongoConfig, WorkersConfig } from "@alien-worlds/aw-history-starter-kit";
 
 export type LeaderboardWriterCommandOptions = {
   threads: number;

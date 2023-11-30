@@ -1,10 +1,11 @@
-import { ConfigVars, buildMongoConfig } from '@alien-worlds/api-core';
+
+import { ConfigVars, WorkersConfig, buildMongoConfig } from '@alien-worlds/aw-history-starter-kit';
 import { buildAtomicAssetsConfig, buildLeaderboardConfig } from '../config';
 import {
   LeaderboardWriterCommandOptions,
   LeaderboardWriterConfig,
 } from './leaderboard.types';
-import { WorkersConfig } from '@alien-worlds/api-history-tools';
+
 
 export const buildLeaderboardWriterWorkersConfig = (
   vars: ConfigVars,

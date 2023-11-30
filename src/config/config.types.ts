@@ -1,7 +1,9 @@
-import { BroadcastConfig } from '@alien-worlds/api-core';
-import { HistoryToolsConfig } from '@alien-worlds/api-history-tools';
-import { AtomicAssetsConfig } from '@alien-worlds/atomicassets-api-common';
-import { LeaderboardConfig } from '@alien-worlds/leaderboard-api-common';
+import { AtomicAssetsConfig } from '@alien-worlds/aw-api-common-atomicassets';
+import { LeaderboardConfig } from '@alien-worlds/aw-api-common-leaderboard';
+import {
+  HistoryToolsConfig,
+  BroadcastConfig,
+} from '@alien-worlds/aw-history-starter-kit';
 
 export type LeaderboardHistoryToolsConfig = HistoryToolsConfig & {
   externalBroadcast: BroadcastConfig;
