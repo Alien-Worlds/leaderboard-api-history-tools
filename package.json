@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@alien-worlds/aw-api-common-atomicassets": "^0.0.8",
-    "@alien-worlds/aw-api-common-leaderboard": "^0.0.19",
+    "@alien-worlds/aw-api-common-leaderboard": "^0.0.21",
     "@alien-worlds/aw-contract-notify-world": "^0.0.1",
     "@alien-worlds/aw-history-starter-kit": "^0.0.10",
     "@alien-worlds/aw-storage-redis": "^0.0.7",
