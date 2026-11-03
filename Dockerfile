@@ -1,11 +1,11 @@
 # BUILDER
 
-FROM node:17-alpine3.12 AS leaderboard-api-history-tools-builder
+FROM node:24-alpine AS leaderboard-api-history-tools-builder
 
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-RUN apk add --no-cache --virtual build-dependencies python2 g++ make
+RUN apk add --no-cache --virtual build-dependencies python3 g++ make
 
 RUN apk add curl
 
@@ -23,7 +23,7 @@ RUN yarn build:prod
 
 # PRODUCTION
 
-FROM node:17-alpine3.12 AS leaderboard-api-history-tools
+FROM node:24-alpine AS leaderboard-api-history-tools
 
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
